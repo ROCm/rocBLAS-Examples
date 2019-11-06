@@ -11,7 +11,7 @@ ifeq (,$(HIP_PATH))
 endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
-ROCBLAS_PATH?= $(wildcard /home/torrezuk/blas/build/release/rocblas-install) # TODO removal
+ROCBLAS_PATH?= $(wildcard /home/torrezuk/blas/build/release/rocblas-install)
 ifeq (,$(ROCBLAS_PATH))
         ROCBLAS_PATH?= $(wildcard /opt/rocm/rocblas)
 endif
