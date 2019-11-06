@@ -34,7 +34,6 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-    hipError_t     herror  = hipSuccess;
     rocblas_status rstatus = rocblas_status_success;
 
     typedef float dataType;
@@ -51,10 +50,10 @@ int main(int argc, char** argv)
     const rocblas_operation transA = rocblas_operation_none;
     const rocblas_operation transB = rocblas_operation_none;
 
-    rocblas_int       lda, ldb, ldc;
-    rocblas_int       strideA1, strideA2, strideB1, strideB2;
-    typedef ptrdiff_t rocblas_stride; // temporary for rocblas2.8
-    rocblas_stride    strideA, strideB, strideC;
+    rocblas_int lda, ldb, ldc; // leading dimension of matrices
+    rocblas_int strideA1, strideA2, strideB1, strideB2;
+
+    rocblas_stride strideA, strideB, strideC;
 
     if(transA == rocblas_operation_none)
     {
@@ -174,8 +173,6 @@ int main(int argc, char** argv)
     std::cout << "M, N, K, lda, ldb, ldc = " << M << ", " << N << ", " << K << ", " << lda << ", "
               << ldb << ", " << ldc << std::endl;
 
-    float max_relative_error = std::numeric_limits<dataType>::min();
-
     // calculate gold standard using CPU
     for(int i = 0; i < batchCount; i++)
     {
@@ -199,23 +196,18 @@ int main(int argc, char** argv)
                                       ldc);
     }
 
-    for(int i = 0; i < totalSizeC; i++)
+    dataType maxRelativeError = helpers::maxRelativeError(hC, hGold);
+    dataType eps              = std::numeric_limits<dataType>::epsilon();
+    float    tolerance        = 10;
+    if(maxRelativeError > eps * tolerance)
     {
-        float relative_error = (hGold[i] - hC[i]) / hGold[i];
-        relative_error       = relative_error > 0 ? relative_error : -relative_error;
-        max_relative_error
-            = relative_error < max_relative_error ? max_relative_error : relative_error;
-    }
-    float eps       = std::numeric_limits<float>::epsilon();
-    float tolerance = 10;
-    if(max_relative_error != max_relative_error || max_relative_error > eps * tolerance)
-    {
-        std::cout << "FAIL: max_relative_error = " << max_relative_error << std::endl;
+        std::cout << "FAIL";
     }
     else
     {
-        std::cout << "PASS: max_relative_error = " << max_relative_error << std::endl;
+        std::cout << "PASS";
     }
+    std::cout << ": max. relative error = " << maxRelativeError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);

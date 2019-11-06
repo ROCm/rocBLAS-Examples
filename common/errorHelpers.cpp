@@ -24,26 +24,5 @@ THE SOFTWARE.
 
 namespace helpers
 {
-    const char* const rocblasGetStatusString(rocblas_status status)
-    {
-        switch(status)
-        {
-        case rocblas_status_success:
-            return "rocblas_status_success";
-        case rocblas_status_invalid_handle:
-            return "rocblas_status_invalid_handle";
-        case rocblas_status_not_implemented:
-            return "rocblas_status_not_implemented";
-        case rocblas_status_invalid_pointer:
-            return "rocblas_status_invalid_pointer";
-        case rocblas_status_invalid_size:
-            return "rocblas_status_invalid_size";
-        case rocblas_status_memory_error:
-            return "rocblas_status_memory_error";
-        case rocblas_status_internal_error:
-            return "rocblas_status_internal_error";
-        default:
-            return "<undefined rocblas_status value>";
-        }
-    }
+
 } // namespace helpers

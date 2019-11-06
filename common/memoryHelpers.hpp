@@ -66,7 +66,6 @@ namespace helpers
             T* d;
             if((hipMalloc)(&d, mBytes) != hipSuccess)
             {
-                static char* lc = setlocale(LC_NUMERIC, "");
                 fprintf(stderr, "Error allocating %'zu mBytes (%zu GB)\n", mBytes, mBytes >> 30);
                 d = nullptr;
             }

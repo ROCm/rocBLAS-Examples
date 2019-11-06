@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     float* deviceVecA;
     herror = hipMalloc(&deviceVecA, vectorBytes);
     CHECK_HIP_ERROR(herror);
-    rstatus = rocblas_set_vector( nSize, sizeof(float), hostVecA.data(), incx, deviceVecA, incx);
+    rstatus = rocblas_set_vector(nSize, sizeof(float), hostVecA.data(), incx, deviceVecA, incx);
     CHECK_ROCBLAS_STATUS(rstatus);
     // equivalent if increments are all 1 to doing call
     //herror = hipMemcpy(deviceVecA, hostVecA.data(), vectorBytes, hipMemcpyHostToDevice);
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     float* deviceVecB;
     herror = hipMalloc(&deviceVecB, vectorBytes);
     CHECK_HIP_ERROR(herror);
-    rstatus = rocblas_set_vector( nSize, sizeof(float), hostVecB.data(), incy, deviceVecB, incy);
+    rstatus = rocblas_set_vector(nSize, sizeof(float), hostVecB.data(), incy, deviceVecB, incy);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     // using rocblas API
@@ -81,20 +81,22 @@ int main(int argc, char** argv)
     CHECK_ROCBLAS_STATUS(rstatus);
 
     // asynchronous calculation on device, returns before finished calculations
+    // Leading 's' in sswap stands for single precision float
+    // the rocblas "C" API specifies data type this way as there is no function overloading in "C"
     rstatus = rocblas_sswap(handle, n, deviceVecA, incx, deviceVecB, incy);
     // check that calculation was launched correctly on device, not that result
     // was computed yet
     CHECK_ROCBLAS_STATUS(rstatus);
 
     // fetch device memory results, hipMemcpy automatically blocked until results ready
-    rstatus = rocblas_get_vector( nSize, sizeof(float), deviceVecA, incx, hostVecA.data(), incx);
+    rstatus = rocblas_get_vector(nSize, sizeof(float), deviceVecA, incx, hostVecA.data(), incx);
     CHECK_ROCBLAS_STATUS(rstatus);
     // equivalent if increments are all 1 to doing call
     // herror = hipMemcpy(hostVecA.data(), deviceVecA, vectorBytes, hipMemcpyDeviceToHost);
     // CHECK_HIP_ERROR(herror);
 
-    rstatus = rocblas_get_vector( nSize, sizeof(float), deviceVecB, incy, hostVecB.data(), incy);
-    CHECK_ROCBLAS_STATUS(rstatus);    
+    rstatus = rocblas_get_vector(nSize, sizeof(float), deviceVecB, incy, hostVecB.data(), incy);
+    CHECK_ROCBLAS_STATUS(rstatus);
 
     // print results
     std::cout << "Output Vectors" << std::endl;

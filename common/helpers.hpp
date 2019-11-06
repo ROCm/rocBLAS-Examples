@@ -36,8 +36,9 @@ namespace helpers
     template <typename T>
     void printVector(const std::vector<T>& v, size_t n = 0, rocblas_int inc = 1)
     {
-        if (n <= 0) n = v.size();
-        for(int i = 0; i < n; i += inc)
+        if(n <= 0)
+            n = v.size();
+        for(size_t i = 0; i < n; i += inc)
         {
             std::cout << v[i] << " ";
         }
@@ -64,13 +65,14 @@ namespace helpers
         // Initialize the array with a normal distributed random variable.
 
         srand(int(time(NULL)));
-        std::random_device         rd{};
-        std::mt19937               gen{rd()};
-        std::normal_distribution<> d{0, 1};
+        std::random_device          rd{};
+        std::mt19937                gen{rd()};
+        std::normal_distribution<T> distrib{T(0), T(1)};
+        distrib(gen); // prime generator to remove warning
 
-        for(int i = 0; i < arr.size(); i += inc)
+        for(size_t i = 0; i < arr.size(); i += inc)
         {
-            arr[i] = T(d(gen));
+            arr[i] = distrib(gen);
         }
     }
 

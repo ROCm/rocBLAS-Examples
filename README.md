@@ -19,8 +19,7 @@ The examples utilize C++ and some shared helper code which is contained in the c
 ## Prerequisites
 * rocBLAS and it's prerequisites 
 If you require rocBLAS it is described at 
-[https://github.com/ROCmSoftwarePlatform/rocBLAS]
-(https://github.com/ROCmSoftwarePlatform/rocBLAS)
+[https://github.com/ROCmSoftwarePlatform/rocBLAS](https://github.com/ROCmSoftwarePlatform/rocBLAS)
 
 ## Installing
 This repository can be cloned into any directory where you want to build the examples. 
@@ -32,7 +31,7 @@ After cloning this repository you can build all the examples using make in the t
 
     cd Level-1/swap 
     make
-    ./example
+    ./swap
 
 ## Contributing
 Additional examples should be added in the Application directory.  The directory name should indicate the application domain and examples must contain a README.md file.   Additional examples may use the common code but should not modify it.  

@@ -34,7 +34,6 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-    hipError_t     herror  = hipSuccess;
     rocblas_status rstatus = rocblas_status_success;
 
     typedef float dataType;
@@ -167,7 +166,7 @@ int main(int argc, char** argv)
     {
         std::cout << "PASS";
     }
-    std::cout << ": maxRelativeError = " << maxRelativeError << std::endl;
+    std::cout << ": max. relative error = " << maxRelativeError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);

@@ -3,7 +3,7 @@
 DIRS     = $(wildcard */)
 DIRSPATH = ./
 
-.PHONY: all clean exe
+.PHONY: all clean exe run
  
 all: exe
 
@@ -12,3 +12,6 @@ clean:
 
 exe:
 	$(foreach dir,$(DIRS),make -C $(DIRSPATH)$(dir);)
+
+run:
+	$(foreach dir,$(DIRS),make run -C $(DIRSPATH)$(dir);)

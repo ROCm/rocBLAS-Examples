@@ -169,6 +169,8 @@ namespace helpers
     }
 
     //
+    // Class for blas examples and common parameters
+    //
     ArgParser::ArgParser(std::string standardArgs, const std::vector<std::string>& params)
         : ArgParserBase::ArgParserBase(params)
     {
@@ -180,10 +182,10 @@ namespace helpers
         static const char* const cK = "K|K|Matrix/vector dimension";
         static const char* const ca = "a|alpha|Alpha scalar";
         static const char* const cb = "b|beta|Beta scalar";
-        static const char* const cc = "c|count|Batch Count";
+        static const char* const cc = "c|count|Batch count";
 
         std::vector<std::string> stdArgs;
-        for(int i = 0; i < standardArgs.length(); i++)
+        for(size_t i = 0; i < standardArgs.length(); i++)
         {
             switch(standardArgs[i])
             {

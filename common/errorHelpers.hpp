@@ -43,22 +43,17 @@ THE SOFTWARE.
     }
 #endif
 
-namespace helpers
-{
-    extern const char* const rocblasGetStatusString(rocblas_status status);
-}
-
 #ifndef CHECK_ROCBLAS_STATUS
-#define CHECK_ROCBLAS_STATUS(status)                     \
-    if(status != rocblas_status_success)                 \
-    {                                                    \
-        fprintf(stderr, "rocBLAS error: ");              \
-        fprintf(stderr,                                  \
-                "rocBLAS error: '%s'(%d) at %s:%d\n",    \
-                helpers::rocblasGetStatusString(status), \
-                status,                                  \
-                __FILE__,                                \
-                __LINE__);                               \
-        exit(EXIT_FAILURE);                              \
+#define CHECK_ROCBLAS_STATUS(status)                  \
+    if(status != rocblas_status_success)              \
+    {                                                 \
+        fprintf(stderr, "rocBLAS error: ");           \
+        fprintf(stderr,                               \
+                "rocBLAS error: '%s'(%d) at %s:%d\n", \
+                rocblas_status_to_string(status),     \
+                status,                               \
+                __FILE__,                             \
+                __LINE__);                            \
+        exit(EXIT_FAILURE);                           \
     }
 #endif

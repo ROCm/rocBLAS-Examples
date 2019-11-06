@@ -34,7 +34,6 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-    hipError_t     herror  = hipSuccess;
     rocblas_status rstatus = rocblas_status_success;
 
     typedef float dataType;
@@ -105,8 +104,8 @@ int main(int argc, char** argv)
             return EXIT_FAILURE;
         }
 
-        helpers::GPUTimer
-            gpuTimer; // time data to device, computation, and data from device back to host
+        // time data to device, computation, and data from device back to host
+        helpers::GPUTimer gpuTimer;
         gpuTimer.start();
 
         // copy data from CPU to device
@@ -139,10 +138,10 @@ int main(int argc, char** argv)
     helpers::printVector(hY);
 
     // calculate expected result using CPU
-    for(int i = 0; i < sizeY; i++)
+    for(size_t i = 0; i < sizeY; i++)
     {
-        // matrix is identity so just doing simple calc over vectors
-        hYGold[i] = hAlpha * 1.0f * hX[i] + hBeta * hYGold[i];
+        // matrix is identity so just doing simpler calculation over vectors
+        hYGold[i] = hAlpha * 1.0 * hX[i] + hBeta * hYGold[i];
     }
 
     dataType maxRelativeError = helpers::maxRelativeError(hY, hYGold);
@@ -156,7 +155,7 @@ int main(int argc, char** argv)
     {
         std::cout << "PASS";
     }
-    std::cout << ": maxRelativeError = " << maxRelativeError << std::endl;
+    std::cout << ": max. relative error = " << maxRelativeError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
