@@ -64,8 +64,12 @@ rocBLAS_ExamplesCI:
                     cd ${project.paths.project_build_prefix}
                     ${getRocBLAS}
                     ${project.paths.build_command} run 2>&1 | tee test_log 
-                    grep -n error test_log | grep -n warning test_log
-                    grep -n error test_log > test_errors | grep -n warning test_log >> test_errors
+                    grep -ni error test_log
+                    grep -ni warning test_log
+                    grep -ni fail test_log
+                    grep -ni error test_log > test_errors
+                    grep -ni warning test_log >> test_errors
+                    grep -ni fail test_log >> test_errors
                     var1 = wc -l test_errors 
                     if [[var1 != 0]]; then
                         exit 1
