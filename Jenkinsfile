@@ -60,7 +60,7 @@ rocBLAS_ExamplesCI:
 
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
-                    set -x
+                    set -ex
                     cd ${project.paths.project_build_prefix}
                     ${getRocBLAS}
                     ${project.paths.build_command} run 2>&1 | tee test_log 
