@@ -43,10 +43,10 @@ rocBLAS_ExamplesCI:
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -x
-                    cd ${project.paths.project_build_prefix}
-                    ${getRocBLAS}
+                    cd \${project.paths.project_build_prefix}
+                    \${getRocBLAS}
                     export PATH=/opt/rocm/bin:$PATH
-                    ${sudo} make
+                    \${sudo} make
                 """
 
         platform.runCommand(this, command)
@@ -61,16 +61,16 @@ rocBLAS_ExamplesCI:
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -ex
-                    cd ${project.paths.project_build_prefix}
-                    ${getRocBLAS}
-                    ${sudo} make run 2>&1 | tee test_log 
+                    cd \${project.paths.project_build_prefix}
+                    \${getRocBLAS}
+                    \${sudo} make run 2>&1 | tee test_log 
                     grep -ni error test_log
                     grep -ni warning test_log
                     grep -ni fail test_log
                     grep -ni error test_log > test_errors
                     grep -ni warning test_log >> test_errors
                     grep -ni fail test_log >> test_errors
-                    VAR=$(wc -l < test_errors)
+                    VAR=\$(wc -l < test_errors)
                     if [ $VAR != 0 ]; then
                         exit 1
                     fi
