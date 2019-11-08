@@ -16,6 +16,8 @@ RUN zypper -n update && zypper -n install\
     make \
     cmake \
     libcxxtools9 \
+    unzip \
+    wget \
     libnuma1
 
 # docker pipeline runs containers with particular uid
