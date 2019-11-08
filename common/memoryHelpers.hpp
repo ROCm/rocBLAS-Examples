@@ -52,7 +52,6 @@ namespace helpers
             }
         }
 
-
         T* setup()
         {
             T* d;
@@ -107,7 +106,6 @@ namespace helpers
         }
     };
 
-
     /*! \brief  pseudo-vector subclass which uses device memory */
     template <typename T, size_t PAD = 4096, typename U = T>
     class DeviceVector : private DeviceVectorMemory<T, PAD, U>
@@ -150,7 +148,6 @@ namespace helpers
     private:
         T* mData;
     };
-
 
     /*! \brief  pseudo-vector subclass which uses a BatchCount of device memory
                 pointers and an array of pointers in host memory*/
@@ -197,4 +194,3 @@ namespace helpers
     };
 
 } // namespace helpers
- 
