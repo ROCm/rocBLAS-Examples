@@ -43,10 +43,10 @@ rocBLAS_ExamplesCI:
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -x
-                    cd ${project.paths.project_build_prefix}
-                    ${getRocBLAS}
+                    cd \${project.paths.project_build_prefix}
+                    \${getRocBLAS}
                     export PATH=/opt/rocm/bin:$PATH
-                    ${sudo} make
+                    \${sudo} make
                 """
 
         platform.runCommand(this, command)
@@ -61,9 +61,9 @@ rocBLAS_ExamplesCI:
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -ex
-                    cd ${project.paths.project_build_prefix}
-                    ${getRocBLAS}
-                    ${sudo} make run 2>&1 | tee test_log 
+                    cd \${project.paths.project_build_prefix}
+                    \${getRocBLAS}
+                    \${sudo} make run 2>&1 | tee test_log 
                     grep -ni error test_log
                     grep -ni warning test_log
                     grep -ni fail test_log
