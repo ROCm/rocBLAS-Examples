@@ -1,5 +1,5 @@
 # rocBLAS-Examples gemv
-Example showing moving matrix and vector data to the GPU device and calling the rocblas gemv (general matrix vector product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.
+Example showing moving matrix and vector data to the GPU device and calling the rocblas gemv (general matrix vector product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.  This example uses the helper::GPUTimer which can be viewed to see how hip API calls can be used to time computation in a stream using events.
 
 ## Documentation
 Run the example without any command line arguments to use default values.

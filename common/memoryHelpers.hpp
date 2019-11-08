@@ -32,8 +32,7 @@ THE SOFTWARE.
 
 namespace helpers
 {
-    /* ============================================================================================
- */
+
     /*! \brief  base-class to allocate/deallocate device memory */
     template <typename T, size_t PAD, typename U>
     class DeviceVectorMemory
@@ -41,7 +40,6 @@ namespace helpers
     protected:
         size_t mSize, mBytes;
 
-#if 1 // def DEBUG
         U mGuard[PAD];
         DeviceVectorMemory(size_t s)
             : mSize(s)
@@ -53,13 +51,7 @@ namespace helpers
                 memset(&mGuard[0], 0xfe, PAD * sizeof(U));
             }
         }
-#else
-        DeviceVectorMemory(size_t s)
-            : mSize(s)
-            , mBytes(s ? s * sizeof(T) : sizeof(T))
-        {
-        }
-#endif
+
 
         T* setup()
         {
@@ -69,7 +61,6 @@ namespace helpers
                 fprintf(stderr, "Error allocating %'zu mBytes (%zu GB)\n", mBytes, mBytes >> 30);
                 d = nullptr;
             }
-#if 1 // def DEBUG
             else
             {
                 if(PAD > 0)
@@ -84,7 +75,6 @@ namespace helpers
                     hipMemcpy(d + mSize, mGuard, sizeof(mGuard), hipMemcpyHostToDevice);
                 }
             }
-#endif
             return d;
         }
 
@@ -92,7 +82,6 @@ namespace helpers
         {
             if(d != nullptr)
             {
-#if 1 // DEBUG
                 if(PAD > 0)
                 {
                     U host[PAD];
@@ -112,15 +101,13 @@ namespace helpers
                     // Make sure no corruption has occurred
                     assert(!memcmp(host, mGuard, sizeof(mGuard)));
                 }
-#endif
                 // Free device memory
                 CHECK_HIP_ERROR((hipFree)(d));
             }
         }
     };
 
-    /* ============================================================================================
- */
+
     /*! \brief  pseudo-vector subclass which uses device memory */
     template <typename T, size_t PAD = 4096, typename U = T>
     class DeviceVector : private DeviceVectorMemory<T, PAD, U>
@@ -164,10 +151,9 @@ namespace helpers
         T* mData;
     };
 
-    /* ============================================================================================
- */
+
     /*! \brief  pseudo-vector subclass which uses a BatchCount of device memory
-pointers and an array of pointers in host memory*/
+                pointers and an array of pointers in host memory*/
     template <typename T, size_t PAD = 4096, typename U = T>
     class DeviceBatchVector : private DeviceVectorMemory<T, PAD, U>
     {
@@ -211,3 +197,4 @@ pointers and an array of pointers in host memory*/
     };
 
 } // namespace helpers
+ 

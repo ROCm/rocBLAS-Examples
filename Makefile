@@ -8,10 +8,10 @@ LIBSPATH = ./
 all: exe
 
 clean: 
-	$(foreach dir,$(LIBS),make clean --no-print-directory -C $(LIBSPATH)$(dir);)
+	$(foreach dir,$(LIBS),$(foreach eg, $(wildcard $(dir)/*/), make clean --no-print-directory -C $(LIBSPATH)/$(eg);) )
 
 exe:
-	$(foreach dir,$(LIBS),make -C $(LIBSPATH)$(dir);)
+	$(foreach dir,$(LIBS),$(foreach eg, $(wildcard $(dir)/*/), make --no-print-directory -C $(LIBSPATH)/$(eg);) )
 
 run:
-	$(foreach dir,$(LIBS),make run -C $(LIBSPATH)$(dir);)
+	$(foreach dir,$(LIBS),$(foreach eg, $(wildcard $(dir)/*/), make run --no-print-directory -C $(LIBSPATH)/$(eg);) )

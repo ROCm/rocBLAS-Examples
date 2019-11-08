@@ -20,35 +20,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #pragma once
+#include "errorHelpers.hpp"
 #include <chrono>
 #include <hip/hip_runtime.h>
 
 namespace helpers
 {
 
+    /*! \brief  Hip event based GPU timer 
+    ********************************************************************/
     class GPUTimer
     {
     public:
         GPUTimer()
         {
-            hipEventCreate(&mStart);
-            hipEventCreate(&mStop);
+            CHECK_HIP_ERROR(hipEventCreate(&mStart));
+            CHECK_HIP_ERROR(hipEventCreate(&mStop));
         }
-        virtual ~GPUTimer() {}
+        virtual ~GPUTimer()
+        {
+            CHECK_HIP_ERROR(hipEventDestroy(mStart));
+            CHECK_HIP_ERROR(hipEventDestroy(mStop));
+        }
 
         void start()
         {
-            hipEventRecord(mStart);
+            CHECK_HIP_ERROR(hipEventRecord(mStart));
         }
         float stop(const char* msg = nullptr)
         {
-            hipEventRecord(mStop);
-            hipEventSynchronize(mStop);
-            float time_elapsed = 0.0f;
-            hipEventElapsedTime(&time_elapsed, mStart, mStop);
-            const char* prefix = msg ? msg : "HipEventTime elpased: ";
-            std::cout << prefix << time_elapsed << "ms" << std::endl;
-            return time_elapsed;
+            CHECK_HIP_ERROR(hipEventRecord(mStop));
+            CHECK_HIP_ERROR(hipEventSynchronize(mStop));
+            float timeElaspsedMillisec = 0.0f;
+            CHECK_HIP_ERROR(hipEventElapsedTime(&timeElaspsedMillisec, mStart, mStop));
+            const char* prefix = msg ? msg : "hipEventElapsedTime: ";
+            std::cout << prefix << timeElaspsedMillisec << "ms" << std::endl;
+            return timeElaspsedMillisec;
         }
 
     protected:
@@ -56,6 +63,8 @@ namespace helpers
         hipEvent_t mStop;
     };
 
+    /*! \brief  std::chrono based CPU timer 
+    ********************************************************************/
     class CPUTimer
     {
     public:
@@ -68,13 +77,14 @@ namespace helpers
         }
         double stop(const char* msg = nullptr)
         {
-            mStop = std::chrono::high_resolution_clock::now();
-            double time_elapsed
+            mStop                               = std::chrono::high_resolution_clock::now();
+            constexpr double cNanosecToMillisec = 1e-6;
+            double           timeElaspsedMillisec
                 = std::chrono::duration_cast<std::chrono::nanoseconds>(mStop - mStart).count()
-                  * 1e-6;
+                  * cNanosecToMillisec;
             const char* prefix = msg ? msg : "Time elpased: ";
-            std::cout << prefix << time_elapsed << "ms" << std::endl;
-            return time_elapsed;
+            std::cout << prefix << timeElaspsedMillisec << "ms" << std::endl;
+            return timeElaspsedMillisec;
         }
 
     protected:

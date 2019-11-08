@@ -39,6 +39,8 @@ namespace helpers
         int         mParamKeyInt;
     };
 
+    /*! \brief  Base class for simple command line parsing
+    ********************************************************************/
     class ArgParserBase
     {
     public:
@@ -52,6 +54,7 @@ namespace helpers
         ArgParserBase(const std::vector<std::string>& options = {});
 
         void printHelp();
+
         void usage(int argIdx);
 
         void decodeOption(const std::string& option);
@@ -59,7 +62,8 @@ namespace helpers
         void addParams(const std::vector<std::string>& options);
 
         std::string argKey(int argIdx);
-        int         getOptionInt(int argIdx);
+
+        int getOptionInt(int argIdx);
 
         virtual int parse(int& argIdx, char** argv)
         {
@@ -71,12 +75,11 @@ namespace helpers
             return eOk;
         }
 
-        /*********************************************************************
-   * @brief validArgs parses the command line options given by user
-   * @param argc number of elements in cmd line input
-   * @param argv array of char* storing the CmdLine Options
-   * @return true if all specified arguments are valid
-   **********************************************************************/
+        /*! * @brief validArgs parses the command line options 
+            * @param argc number of elements in cmd line input
+            * @param argv array of char* storing the CmdLine Options
+            * @return true if all specified arguments are valid
+        ********************************************************************/
         bool validArgs(int argc, char** argv);
 
     protected:
@@ -88,6 +91,8 @@ namespace helpers
         char** mArgv;
     };
 
+    /*! \brief class for rocblas examples command line parsing of common parameters 
+    *******************************************************************************/
     class ArgParser : public ArgParserBase
     {
     public:
@@ -101,9 +106,6 @@ namespace helpers
         rocblas_int M = 5;
         rocblas_int N = 5;
         rocblas_int K = 5;
-        // rocblas_int lda = 5;
-        // rocblas_int ldb = 5;
-        // rocblas_int ldc = 5;
 
         rocblas_int n    = 5;
         rocblas_int incx = 1;
@@ -114,4 +116,5 @@ namespace helpers
         float alpha = 1.0f;
         float beta  = 1.0f;
     };
+
 } // namespace helpers
