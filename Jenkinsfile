@@ -70,7 +70,7 @@ rocBLAS_ExamplesCI:
                     grep -ni error test_log > test_errors
                     grep -ni warning test_log >> test_errors
                     grep -ni fail test_log >> test_errors
-                    VAR=$(wc -l < test_errors)
+                    VAR=\$(wc -l < test_errors)
                     if [ $VAR != 0 ]; then
                         exit 1
                     fi
