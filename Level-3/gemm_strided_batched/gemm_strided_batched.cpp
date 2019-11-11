@@ -207,7 +207,7 @@ int main(int argc, char** argv)
     {
         std::cout << "PASS";
     }
-    std::cout << ": max. relative error = " << maxRelativeError << std::endl;
+    std::cout << ": max. relative err. = " << maxRelativeError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
