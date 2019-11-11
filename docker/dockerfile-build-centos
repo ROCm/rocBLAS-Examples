@@ -23,6 +23,9 @@ RUN yum install -y \
     zlib-devel \ 
     numactl-libs
 
+# Remove old rocblas rpm already in CentOS docker image
+RUN yum remove -y rocblas
+
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
 
