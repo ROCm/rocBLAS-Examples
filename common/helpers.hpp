@@ -97,17 +97,37 @@ namespace helpers
     }
 
     template <typename T>
-    T maxRelativeError(std::vector<T>& A, std::vector<T>& reference)
+    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
     {
-        T maxRelativeError = std::numeric_limits<T>::min();
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_int_distribution<int> distrib{-range, range};
+        distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i += inc)
+        {
+            int rval = distrib(gen);
+            arr[i]   = T(rval);
+        }
+    }
+
+    template <typename T>
+    double maxRelativeError(std::vector<T>& A, std::vector<T>& reference)
+    {
+        double maxRelativeError = double(std::numeric_limits<T>::min());
 
         size_t n = A.size();
         for(size_t i = 0; i < n; ++i)
         {
-            T     gold          = reference[i];
-            float relativeError = (gold - A[i]) / gold;
-            relativeError       = relativeError > 0 ? relativeError : -relativeError;
-            maxRelativeError = relativeError < maxRelativeError ? maxRelativeError : relativeError;
+            double gold = double(reference[i]);
+            if(gold != 0)
+            {
+                double relativeError = (gold - double(A[i])) / double(gold);
+                relativeError        = relativeError > 0 ? relativeError : -relativeError;
+                maxRelativeError
+                    = relativeError < maxRelativeError ? maxRelativeError : relativeError;
+            }
         }
         return maxRelativeError;
     }
@@ -162,6 +182,72 @@ namespace helpers
                     t += A[i1 * As1 + i3 * As2] * B[i3 * Bs1 + i2 * Bs2];
                 }
                 C[i1 * Cs1 + i2 * Cs2] = beta * C[i1 * Cs1 + i2 * Cs2] + alpha * t;
+            }
+        }
+    }
+
+    template <typename T, typename U = T>
+    void matMatMult(T   alpha,
+                    T   beta,
+                    int M,
+                    int N,
+                    int K,
+                    U*  A,
+                    int As1,
+                    int As2,
+                    U*  B,
+                    int Bs1,
+                    int Bs2,
+                    T*  C,
+                    int Cs1,
+                    int Cs2,
+                    T*  D,
+                    int Ds1,
+                    int Ds2)
+    {
+        for(int i1 = 0; i1 < M; i1++)
+        {
+            for(int i2 = 0; i2 < N; i2++)
+            {
+                T t = 0.0;
+                for(int i3 = 0; i3 < K; i3++)
+                {
+                    t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);
+                }
+                D[i1 * Ds1 + i2 * Ds2] = beta * C[i1 * Cs1 + i2 * Cs2] + alpha * t;
+            }
+        }
+    }
+
+    template <typename T, typename U = T, typename V = U>
+    void matMatMultMixPrec(T   alpha,
+                           T   beta,
+                           int M,
+                           int N,
+                           int K,
+                           U*  A,
+                           int As1,
+                           int As2,
+                           U*  B,
+                           int Bs1,
+                           int Bs2,
+                           V*  C,
+                           int Cs1,
+                           int Cs2,
+                           V*  D,
+                           int Ds1,
+                           int Ds2)
+    {
+        for(int i1 = 0; i1 < M; i1++)
+        {
+            for(int i2 = 0; i2 < N; i2++)
+            {
+                T t = 0.0;
+                for(int i3 = 0; i3 < K; i3++)
+                {
+                    t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);
+                }
+                D[i1 * Ds1 + i2 * Ds2] = V(beta * T(C[i1 * Cs1 + i2 * Cs2]) + alpha * t);
             }
         }
     }
