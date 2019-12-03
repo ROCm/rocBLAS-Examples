@@ -19,14 +19,14 @@ endif
 EXE = $(shell basename $(CURDIR))
 COMMON_PATH = ../../common
 SOURCES = $(wildcard *.cpp) $(wildcard $(COMMON_PATH)/*.cpp)
-OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES)) 
+OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES))
 
 CXX=g++
 # uncomment to use hip compiler
 #CXX=$(HIPCXX)
 OPT = -g -Ofast -march=native -Wall
-INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include 
-CXXFLAGS = -std=c++11 $(INC) $(OPT) 
+INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
+CXXFLAGS = -std=c++11 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_HCC__
 endif
@@ -42,7 +42,7 @@ RM = rm -f
 
 all: $(EXE)
 
-%.o: %.cpp 
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(EXE): $(OBJECTS)
