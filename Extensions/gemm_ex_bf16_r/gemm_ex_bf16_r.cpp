@@ -208,7 +208,7 @@ int main(int argc, char** argv)
                                ldd);
 
     double maxRelativeError = helpers::maxRelativeError(hD, hDGold);
-    double eps              = std::numeric_limits<double>::epsilon();
+    double eps              = std::numeric_limits<float>::epsilon();
     double tolerance        = 10;
     if(maxRelativeError > eps * tolerance)
     {
