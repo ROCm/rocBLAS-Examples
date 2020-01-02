@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -11,7 +11,6 @@ ifeq (,$(HIP_PATH))
 endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
-ROCBLAS_PATH?= $(wildcard /home/torrezuk/blas/build/release/rocblas-install)
 ifeq (,$(ROCBLAS_PATH))
         ROCBLAS_PATH= $(wildcard /opt/rocm/rocblas)
 endif
