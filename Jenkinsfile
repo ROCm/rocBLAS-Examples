@@ -27,8 +27,8 @@ rocBLAS_ExamplesCI:
 
     def rocBLAS_Examples = new rocProject('rocBLAS_Examples')
     
-    def nodes = new dockerNodes(['internal && gfx900 && ubuntu16', 'internal && gfx906 && ubuntu16', 'internal && gfx906 && centos7', 
-    'internal && gfx900 && centos7',  'internal && gfx900 && sles', 'internal && gfx906 && sles'], rocBLAS_Examples)
+    def nodes = new dockerNodes(['gfx900 && ubuntu16 && internal', 'gfx906 && ubuntu16 && internal', 'gfx906 && centos7 && internal', 
+    'gfx900 && centos7 && internal',  'gfx900 && sles && internal', 'gfx906 && sles && internal'], rocBLAS_Examples)
 
     boolean formatCheck = true
 
@@ -40,7 +40,7 @@ rocBLAS_ExamplesCI:
 
         def sudo = auxiliary.sudo(platform.jenkinsLabel)
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -58,7 +58,7 @@ rocBLAS_ExamplesCI:
         
         def sudo = auxiliary.sudo(platform.jenkinsLabel)
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}

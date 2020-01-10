@@ -8,9 +8,9 @@ ARG user_uid
 
 # Install dependent packages
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    dkms \
     rocm-dev \
     sudo \
-    rocm_smi64 \
     ca-certificates \
     git \
     make \
