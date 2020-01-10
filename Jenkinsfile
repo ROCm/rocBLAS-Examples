@@ -40,7 +40,7 @@ rocBLAS_ExamplesCI:
 
         def sudo = auxiliary.sudo(platform.jenkinsLabel)
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -58,7 +58,7 @@ rocBLAS_ExamplesCI:
         
         def sudo = auxiliary.sudo(platform.jenkinsLabel)
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
