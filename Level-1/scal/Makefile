@@ -37,12 +37,15 @@ endif
 
 RM = rm -f
 
-.PHONY: all clean run
+.PHONY: all clean run cxxver
 
-all: $(EXE)
+all: cxxver $(EXE)
 
 %.o: %.cpp 
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+cxxver:
+	$(CXX) --version
 
 $(EXE): $(OBJECTS)
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
