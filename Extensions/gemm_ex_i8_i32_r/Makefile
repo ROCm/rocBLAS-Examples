@@ -25,7 +25,7 @@ CXX=g++
 #CXX=$(HIPCXX)
 OPT = -g -Ofast -march=native -Wall
 INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
-CXXFLAGS = -std=c++11 $(INC) $(OPT)
+CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_HCC__
 endif
