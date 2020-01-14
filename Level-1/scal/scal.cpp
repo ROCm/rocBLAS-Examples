@@ -38,9 +38,9 @@ int main(int argc, char** argv)
     hipError_t     herror  = hipSuccess;
     rocblas_status rstatus = rocblas_status_success;
 
-    rocblas_int n = options.n;
+    rocblas_int n    = options.n;
     rocblas_int incx = options.incx;
-    size_t size = n * incx;
+    size_t      size = (n * incx) > 0 ? (n * incx) : -(n * incx);
 
     typedef double dataType;
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
 
-    double      alpha = options.alpha;
+    double alpha = options.alpha;
 
     // enable passing alpha parameter from pointer to host memory
     rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
