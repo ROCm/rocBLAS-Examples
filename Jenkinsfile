@@ -43,6 +43,10 @@ rocBLAS_ExamplesCI:
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
+                    which g++
+                    g++ --version
+                    which make
+                    make --version
                     cd ${project.paths.project_build_prefix}
                     ${getRocBLAS}
                     export PATH=/opt/rocm/bin:$PATH
