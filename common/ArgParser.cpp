@@ -175,8 +175,8 @@ namespace helpers
         : ArgParserBase::ArgParserBase(params)
     {
         static const char* const cn = "n|n|Size of vector";
-        static const char* const cx = "x|xinc|Increment for x vector";
-        static const char* const cy = "y|yinc|Increment for y vector";
+        static const char* const cx = "x|incx|Increment for x vector";
+        static const char* const cy = "y|incy|Increment for y vector";
         static const char* const cM = "M|M|Matrix/vector dimension";
         static const char* const cN = "N|N|Matrix/vector dimension";
         static const char* const cK = "K|K|Matrix/vector dimension";
