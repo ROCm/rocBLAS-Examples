@@ -38,7 +38,8 @@ rocBLAS_ExamplesCI:
 
         project.paths.construct_build_prefix()
 
-        def devtoolset = platform.jenkinsLabel.contains('centos') ? 'export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH' : ':'
+        def sudo = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env ' : ''
+        def devtoolset = platform.jenkinsLabel.contains('centos') ? 'export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH' : ':' 
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
