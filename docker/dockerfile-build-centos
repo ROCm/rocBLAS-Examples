@@ -26,7 +26,7 @@ RUN yum install -y \
 RUN yum remove -y rocblas
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
-    'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
+    'source scl_source enable devtoolset-7' >> /etc/skel/.bashrc
 
 # Grant any member of sudo group password-less sudo privileges
 RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins && \
