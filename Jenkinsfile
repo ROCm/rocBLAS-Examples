@@ -47,7 +47,7 @@ rocBLAS_ExamplesCI:
                     ${getRocBLAS}
                     export PATH=/opt/rocm/bin:$PATH
                     ${devtoolset}
-                    make
+                    ${sudo} make
                 """
 
         platform.runCommand(this, command)
