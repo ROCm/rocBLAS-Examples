@@ -1,4 +1,4 @@
-@Library('rocJenkins') _
+@Library('rocJenkins@wgetlessverbose') _
 
 // This is file for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
@@ -51,7 +51,15 @@ rocBLAS_ExamplesCI:
                     ${getRocBLAS}
                     export PATH=/opt/rocm/bin:$PATH
                     ${devtoolset}
+                    which g++
+                    g++ --version
+                    which make
+                    make --version
                     ${sudo} make
+                    which g++
+                    g++ --version
+                    which make
+                    make --version
                 """
 
         platform.runCommand(this, command)
