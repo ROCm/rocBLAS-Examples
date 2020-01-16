@@ -25,7 +25,7 @@ If you require rocBLAS it is described at
 This repository can be cloned into any directory where you want to build the examples. 
 
 ## Building
-These examples require that you have an installation of rocBLAS on your machine.  You do not require sudo or other access to build these examples which default to compile with gcc but can also use the the hcc compiler from the rocBLAS installation.   The use of hcc can be set by uncommenting a line in the Makefiles.
+These examples require that you have an installation of rocBLAS on your machine.  You do not require sudo or other access to build these examples which default to compile with gcc but can also use the the hcc compiler from the rocBLAS installation.  The compiler must support the c++14 standard. The use of hcc can be set by uncommenting a line in the Makefiles.
 
 After cloning this repository you can build all the examples using make in the top level directory, or run make in a sub-level directory to build a specific example:
 
