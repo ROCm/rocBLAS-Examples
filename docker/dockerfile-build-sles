@@ -1,0 +1,27 @@
+# Parameters related to building rocBLAS
+ARG base_image
+
+FROM ${base_image}
+LABEL maintainer="rocblas-examples-maintainer@amd.com"
+
+ARG user_uid
+
+# Install dependent packages
+RUN zypper refresh && zypper -n --no-gpg-checks install \ 
+    sudo \
+    ca-certificates \
+    git \
+    gcc-c++ \
+    make \
+    cmake \
+    libcxxtools9 \
+    unzip \
+    wget \
+    libnuma1
+
+# docker pipeline runs containers with particular uid
+# create a jenkins user with this specific uid so it can use sudo priviledges
+# Grant any member of sudo group password-less sudo privileges
+RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins && \
+    echo '%video ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/sudo-nopasswd && \
+    chmod 400 /etc/sudoers.d/sudo-nopasswd
