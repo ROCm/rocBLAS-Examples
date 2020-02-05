@@ -17,7 +17,8 @@ RUN zypper refresh && zypper -n --no-gpg-checks install \
     libcxxtools9 \
     unzip \
     wget \
-    libnuma1
+    libnuma1 \
+    libLLVM7
 
 # docker pipeline runs containers with particular uid
 # create a jenkins user with this specific uid so it can use sudo priviledges
