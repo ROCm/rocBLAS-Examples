@@ -4,8 +4,6 @@
 def runCompileCommand(platform, project, jobName)
 {
     project.paths.construct_build_prefix()
-        
-    def command
 
     def sudo = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env ' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
