@@ -10,8 +10,6 @@ ifeq (,$(HIP_PATH))
         HIP_PATH=
 endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
-HCCXX=/opt/rocm/bin/hcc
-
 
 ifeq (,$(ROCBLAS_PATH))
         ROCBLAS_PATH= $(wildcard /opt/rocm/rocblas)
@@ -24,8 +22,7 @@ OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES))
 
 CXX=g++
 # uncomment to use hip compiler
-CXX=$(HIPCXX)
-#CXX=$(HCCXX)
+#CXX=$(HIPCXX)
 OPT = -g -Ofast -march=native -Wall
 INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
@@ -35,7 +32,7 @@ endif
 
 LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
-	LDFLAGS += -L$(HIP_PATH)/lib -lhiprtc -lhip_hcc
+	LDFLAGS += -L$(HIP_PATH)/lib -lhiprtc -Wl,-rpath=$(HIP_PATH)/lib
 endif
 
 RM = rm -f

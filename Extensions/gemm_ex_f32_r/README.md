@@ -13,7 +13,7 @@ Running with --help will show the options:
       --beta <value>           Beta scalar
 
 ## Building
-These examples require that you have an installation of rocBLAS on your machine.  You do not required sudo or other access to build these examples which default to compile using gcc but can also use the the hcc compiler from the rocBLAS installation. If rocBLAS is not installed you can set the environment variable ROCBLAS_PATH to point to the location of your rocblas build.
+These examples require that you have an installation of rocBLAS on your machine.  You do not required sudo or other access to build these examples which default to compile using gcc but can also use the the hipcc compiler from the rocBLAS installation. If rocBLAS is not installed you can set the environment variable ROCBLAS_PATH to point to the location of your rocblas build.
 
     cd Extensions/gemm_ex_f32_r
     make
