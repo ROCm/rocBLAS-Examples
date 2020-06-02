@@ -109,13 +109,12 @@ int main(int argc, char** argv)
     std::vector<float> hB(sizeB);
     std::vector<float> hC(sizeC);
     std::vector<float> hD(sizeD);
-    std::vector<float> hD2(sizeD);
     std::vector<float> hDGold(sizeD);
 
-    helpers::fillVectorNormRand(hA);
-    helpers::fillVectorNormRand(hB);
-    helpers::fillVectorNormRand(hC);
-    helpers::fillVectorNormRand(hD);
+    helpers::fillVectorUniformIntRand(hA, 1, 3);
+    helpers::fillVectorUniformIntRand(hB, 1, 3);
+    helpers::fillVectorUniformIntRand(hC, 1, 3);
+    helpers::fillVectorUniformIntRand(hD, 1, 3);
 
     hDGold = hD;
 
@@ -150,7 +149,6 @@ int main(int argc, char** argv)
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
         CHECK_ROCBLAS_STATUS(rstatus);
 
-
         // asynchronous calculation on device, returns before finished calculations
         rstatus = rocblas_gemm_ex(handle,
                                 transA,
@@ -176,6 +174,14 @@ int main(int argc, char** argv)
                                 algo,
                                 solutionIndex,
                                 flags);
+
+        // check that calculation was launched correctly on device, not that result
+        // was computed yet
+        CHECK_ROCBLAS_STATUS(rstatus);
+
+        // fetch device memory results, automatically blocked until results ready
+        CHECK_HIP_ERROR(
+            hipMemcpy(hD.data(), dD, sizeof(float) * sizeD, hipMemcpyDeviceToHost));
 
     } // release device memory via helpers::DeviceVector destructors
 
@@ -213,7 +219,6 @@ int main(int argc, char** argv)
         std::cout << "PASS";
     }
     std::cout << ": max. relative err. = " << maxRelativeError << std::endl;
-
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
