@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <cstdio>
 #include <hip/hip_runtime.h>
 #include <iostream>
-#include <rocblas-types.h>
 #include <rocblas.h>
 #include <stdlib.h>
 
