@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "error_macros.h"
 
 
 int main(int argc, char** argv)
@@ -33,28 +34,30 @@ int main(int argc, char** argv)
     size_t lda, ldb, lddev;
     size_t rows, cols;
 
-    int n = 10;
+    int n = 267;
     if (argc > 1) n = atoi(argv[1]);
 
-    // { M:  26700, N:   12162,  lda:  26700, ldb:  26700, lddev:  26700 }
-    rows = 26700;
-    cols = 12162;
-    lda = ldb = lddev = 26700;
+    rows = n;
+    cols = 2*n;
+    lda = ldb = lddev = n;
 
 
     typedef double data_type;
 
     rocblas_handle handle;
     rocblas_status rstatus = rocblas_create_handle(&handle);
+    CHECK_ROCBLAS_STATUS(rstatus);
 
     hipStream_t test_stream;
-    rocblas_get_stream( handle, &test_stream );
+    rstatus = rocblas_get_stream( handle, &test_stream );
+    CHECK_ROCBLAS_STATUS(rstatus);
 
     data_type* ha;
     data_type* hb;
+
     // allocate pinned memory to allow async memory transfer
-    assert( hipMallocHost(&ha, lda * cols * sizeof(data_type)) == hipSuccess);
-    assert( hipMallocHost(&hb, lda * cols * sizeof(data_type)) == hipSuccess);
+    CHECK_HIP_ERROR(hipHostMalloc((void**)&ha, lda * cols * sizeof(data_type), hipHostMallocMapped));
+    CHECK_HIP_ERROR(hipHostMalloc((void**)&hb, ldb * cols * sizeof(data_type), hipHostMallocMapped));
 
     for(int i1 = 0; i1 < rows; i1++)
         for(int i2 = 0; i2 < cols; i2++)
@@ -63,33 +66,42 @@ int main(int argc, char** argv)
     data_type* da = 0;
     data_type* db = 0;
     data_type* dc = 0;
-    assert(hipMalloc((void**)&da, lddev * cols * sizeof(data_type)) == hipSuccess);
-    assert(hipMalloc((void**)&db, lddev * cols * sizeof(data_type)) == hipSuccess);
-    assert(hipMalloc((void**)&dc, lddev * cols * sizeof(data_type)) == hipSuccess);
+    CHECK_HIP_ERROR(hipMalloc((void**)&da, lddev * cols * sizeof(data_type)));
+    CHECK_HIP_ERROR(hipMalloc((void**)&db, lddev * cols * sizeof(data_type))); 
+    CHECK_HIP_ERROR(hipMalloc((void**)&dc, lddev * cols * sizeof(data_type)));
 
-    rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, da, lddev, test_stream);
-    rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, db, lddev, test_stream);
+    rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, da, lddev, test_stream);
+    rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, db, lddev, test_stream);
 
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+    rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+    CHECK_ROCBLAS_STATUS(rstatus);
 
-    //hipStreamSynchronize(test_stream);
     data_type alpha = 1.0;
     data_type beta = 2.0;
-    rocblas_dgeam(handle, rocblas_operation_none, rocblas_operation_none, rows, cols, &alpha, da, lddev, &beta, db, lddev, dc, lddev);
+    rstatus = rocblas_dgeam(handle, rocblas_operation_none, rocblas_operation_none, rows, cols, &alpha, da, lddev, &beta, db, lddev, dc, lddev);
+    CHECK_ROCBLAS_STATUS(rstatus);
 
-    rocblas_get_matrix_async(rows, cols, sizeof(data_type), dc, lddev, hb, ldb, test_stream);
+    rstatus = rocblas_get_matrix_async(rows, cols, sizeof(data_type), dc, lddev, hb, ldb, test_stream);
+    CHECK_ROCBLAS_STATUS(rstatus);
 
-    hipStreamSynchronize(test_stream);
+    CHECK_HIP_ERROR(hipStreamSynchronize(test_stream));
 
+    bool fail = false;
     for(int i1 = 0; i1 < rows; i1++)
         for(int i2 = 0; i2 < cols; i2++)
-            assert(hb[i1 + i2 * ldb] == 3.0*ha[i1 + i2 * lda]);
+            if (hb[i1 + i2 * ldb] != 3.0*ha[i1 + i2 * lda])
+                fail = true;
 
-    hipFree(dc);
+    CHECK_HIP_ERROR(hipFree(dc));
 
     // free pinned memory
-    hipFreeHost(ha);
-    hipFreeHost(hb);
+    CHECK_HIP_ERROR(hipHostFree(ha));
+    CHECK_HIP_ERROR(hipHostFree(hb));
+
+    rstatus = rocblas_destroy_handle(handle);
+    CHECK_ROCBLAS_STATUS(rstatus);
+
+    fprintf(stdout, "%s\n", fail ? "FAIL" : "PASS");
 
     return 0;
 }

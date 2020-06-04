@@ -23,7 +23,7 @@ CC=gcc
 # uncomment to use hip compiler
 #CC=$(HIPCXX)
 OPT = -ggdb -O0 -march=native -Wall
-INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
+INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 CCFLAGS = -std=c11 $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
 	CCFLAGS += -D__HIP_PLATFORM_HCC__

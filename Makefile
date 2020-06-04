@@ -1,6 +1,6 @@
 
 # folders to recurse into
-LIBS     = Level-1 Level-2 Level-3 Extensions
+LIBS     = Level-1 Level-2 Level-3 Extensions Languages
 LIBSPATH = ./
 
 .PHONY: all clean exe run

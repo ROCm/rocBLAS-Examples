@@ -22,37 +22,6 @@ THE SOFTWARE.
 
 #pragma once
 
+#include "error_macros.h"
 #include <cstdio>
-#include <hip/hip_runtime.h>
 #include <iostream>
-#include <rocblas.h>
-#include <stdlib.h>
-
-#ifndef CHECK_HIP_ERROR
-#define CHECK_HIP_ERROR(error)                    \
-    if(error != hipSuccess)                       \
-    {                                             \
-        fprintf(stderr,                           \
-                "hip error: '%s'(%d) at %s:%d\n", \
-                hipGetErrorString(error),         \
-                error,                            \
-                __FILE__,                         \
-                __LINE__);                        \
-        exit(EXIT_FAILURE);                       \
-    }
-#endif
-
-#ifndef CHECK_ROCBLAS_STATUS
-#define CHECK_ROCBLAS_STATUS(status)                  \
-    if(status != rocblas_status_success)              \
-    {                                                 \
-        fprintf(stderr, "rocBLAS error: ");           \
-        fprintf(stderr,                               \
-                "rocBLAS error: '%s'(%d) at %s:%d\n", \
-                rocblas_status_to_string(status),     \
-                status,                               \
-                __FILE__,                             \
-                __LINE__);                            \
-        exit(EXIT_FAILURE);                           \
-    }
-#endif
