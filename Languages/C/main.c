@@ -70,28 +70,37 @@ int main(int argc, char** argv)
     CHECK_HIP_ERROR(hipMalloc((void**)&db, lddev * cols * sizeof(data_type))); 
     CHECK_HIP_ERROR(hipMalloc((void**)&dc, lddev * cols * sizeof(data_type)));
 
+    // upload asynchronously from pinned memory
     rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, da, lddev, test_stream);
     rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, db, lddev, test_stream);
 
+    // scalar arguments will be from host memory
     rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     data_type alpha = 1.0;
     data_type beta = 2.0;
+
+    // invoke asynchronous computation
     rstatus = rocblas_dgeam(handle, rocblas_operation_none, rocblas_operation_none, rows, cols, &alpha, da, lddev, &beta, db, lddev, dc, lddev);
     CHECK_ROCBLAS_STATUS(rstatus);
 
+    // fetch results asynchronously to pinned memory
     rstatus = rocblas_get_matrix_async(rows, cols, sizeof(data_type), dc, lddev, hb, ldb, test_stream);
     CHECK_ROCBLAS_STATUS(rstatus);
 
+    // wait on transfer to be finished
     CHECK_HIP_ERROR(hipStreamSynchronize(test_stream));
 
+    // check against expected results
     bool fail = false;
     for(int i1 = 0; i1 < rows; i1++)
         for(int i2 = 0; i2 < cols; i2++)
             if (hb[i1 + i2 * ldb] != 3.0*ha[i1 + i2 * lda])
                 fail = true;
 
+    CHECK_HIP_ERROR(hipFree(da));
+    CHECK_HIP_ERROR(hipFree(db));
     CHECK_HIP_ERROR(hipFree(dc));
 
     // free pinned memory
