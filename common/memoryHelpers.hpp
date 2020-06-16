@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 #pragma once
-#include "errorHelpers.hpp"
+#include "error_macros.h"
 #include <cinttypes>
 #include <cstdio>
 #include <hip/hip_runtime.h>
@@ -179,7 +179,7 @@ namespace helpers
             return mData[n];
         }
 
-        operator T**()
+        operator T* *()
         {
             return mData;
         }

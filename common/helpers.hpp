@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,11 @@ THE SOFTWARE.
 
 #pragma once
 #include "ArgParser.hpp"
-#include "errorHelpers.hpp"
+#include "error_macros.h"
 #include "memoryHelpers.hpp"
 #include "timers.hpp"
+#include <cstdio>
+#include <iostream>
 #include <random>
 #include <rocblas.h>
 #include <stdlib.h>
@@ -263,7 +265,5 @@ namespace helpers
             }
         }
     }
-
-    // error helpers
 
 } // namespace helpers
