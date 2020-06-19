@@ -16,21 +16,20 @@ ifeq (,$(ROCBLAS_PATH))
 endif
 
 EXE = $(shell basename $(CURDIR))
-COMMON_PATH = ../../common
-SOURCES = $(wildcard *.cpp) $(wildcard $(COMMON_PATH)/*.cpp)
-OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES))
+SOURCES = $(wildcard *.c) 
+OBJECTS = $(patsubst %.c, %.o, $(SOURCES))
 
-CXX=g++
+CC=gcc
 # uncomment to use hip compiler
-CXX=$(HIPCXX)
-OPT = -g -Ofast -march=native -Wall
-INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
-CXXFLAGS = -std=c++14 $(INC) $(OPT)
-ifneq ($(CXX),$(HIPCXX))
-	CXXFLAGS += -D__HIP_PLATFORM_HCC__
+#CC=$(HIPCXX)
+OPT = -ggdb -O0 -march=native -Wall
+INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
+CCFLAGS = -std=c11 $(INC) $(OPT) 
+ifneq ($(CC),$(HIPCXX))
+	CCFLAGS += -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lc
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -L$(HIP_PATH)/lib -lhiprtc -Wl,-rpath=$(HIP_PATH)/lib
 endif
@@ -41,11 +40,11 @@ RM = rm -f
 
 all: $(EXE)
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $< -o $@
 
 $(EXE): $(OBJECTS)
-	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 clean:
 	$(RM) $(EXE) $(OBJECTS)

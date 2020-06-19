@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #pragma once
-#include "errorHelpers.hpp"
+#include "error_macros.h"
 #include <chrono>
+#include <cstdio>
 #include <hip/hip_runtime.h>
+#include <iostream>
 
 namespace helpers
 {
 
-    /*! \brief  Hip event based GPU timer 
+    /*! \brief  Hip event based GPU timer
     ********************************************************************/
     class GPUTimer
     {
@@ -63,7 +65,7 @@ namespace helpers
         hipEvent_t mStop;
     };
 
-    /*! \brief  std::chrono based CPU timer 
+    /*! \brief  std::chrono based CPU timer
     ********************************************************************/
     class CPUTimer
     {
