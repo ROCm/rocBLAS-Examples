@@ -47,13 +47,14 @@ subroutine ROCBLAS_CHECK(stat)
 end subroutine ROCBLAS_CHECK
 
 
-program example_fortran
+program fortran_example
     use iso_c_binding
-    use rocblas ! provided in rocblas/include
+    use rocblas
+    ! provided in rocblas/include
 
     implicit none
 
-    ! TODO: hip workaround until plugin is ready.
+    ! access hip until there is hip module
     interface
         function hipMalloc(ptr, size) &
                 result(c_int) &
@@ -117,7 +118,7 @@ program example_fortran
             implicit none
         end function hipDeviceReset
     end interface
-    ! TODO end
+    ! hip access
 
 
     integer tbegin(8)
@@ -194,4 +195,4 @@ program example_fortran
     call ROCBLAS_CHECK(rocblas_destroy_handle(handle))
     call HIP_CHECK(hipDeviceReset())
 
-end program example_fortran
+end program fortran_example
