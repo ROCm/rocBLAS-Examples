@@ -50,7 +50,7 @@ end subroutine ROCBLAS_CHECK
 program fortran_example
     use iso_c_binding
     use rocblas
-    ! provided in rocblas/include
+    ! generated from rocblas/include/rocblas_module.f90
 
     implicit none
 

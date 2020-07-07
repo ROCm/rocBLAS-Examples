@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -20,7 +20,7 @@ SOURCES = $(wildcard *.f90)
 OBJECTS = $(patsubst %.f90, %.o, $(SOURCES))
 
 CC=gfortran
-OPT = -ggdb -O0 -march=native -Wall
+OPT = -ggdb -O0 -march=native -Wall -Wno-c-binding-type
 INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 FFLAGS = $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
@@ -41,11 +41,14 @@ all: $(EXE)
 %.o: %.f90
 	$(CC) $(FFLAGS) -c $< -o $@
 
-$(EXE): $(OBJECTS)
+rocblas.mod: $(ROCBLAS_PATH)/include/rocblas_module.f90
+	$(CC) $(FFLAGS) -c $<
+
+$(EXE): rocblas.mod $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 clean:
-	$(RM) $(EXE) $(OBJECTS)
+	$(RM) $(EXE) $(OBJECTS) *.mod rocblas_module.o
 
 run:
 	./$(EXE)
