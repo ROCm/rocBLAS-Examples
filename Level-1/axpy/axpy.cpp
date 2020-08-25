@@ -34,8 +34,8 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-    hipError_t     herror  = hipSuccess;                        //Initialize HIP error status to check the return status of the HIP API functions
-    rocblas_status rstatus = rocblas_status_success;            //Initialize rocBLAS status to check the return status of the rocBLAS API functions
+    hipError_t     herror  = hipSuccess;                        //Initialize HIP error to check the return status of the HIP API functions
+    rocblas_status rstatus = rocblas_status_success;            //Initialize rocBLAS error to check the return status of the rocBLAS API functions
 
     rocblas_int incx = options.incx;                            //Stride between consecutive values of input vector X (default value is 1)
     rocblas_int incy = options.incy;                            //Stride between consecutive values of input vector Y (default value is 1)
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     helpers::printVector(hY);
 
     std::vector<float> hYGold(hY);                              //Initialising the values for vector hYGold, this vector will be used as a Gold Standard  
-                                                                //for our results from rocBLAS SAXPY funtion 
+                                                                //to compare our results from rocBLAS SAXPY funtion 
                                                                 
     for(int i=0; i < n; i++)                                    //CPU function for SAXPY
         hYGold[i*incy] =  hAlpha * hX[i*incx] + hY[i*incy];
@@ -70,13 +70,13 @@ int main(int argc, char** argv)
 
     {
 
-        helpers::DeviceVector<float> dX(sizeX);                     //Allocating memory for both the both device vectors X and Y
+        helpers::DeviceVector<float> dX(sizeX);                                             //Allocating memory for both the both device vectors X and Y
         helpers::DeviceVector<float> dY(sizeY);
     
-        herror=hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);      // Tansfer data from host vector X to device vector X
+        herror=hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);      //Tansfer data from host vector X to device vector X
         CHECK_HIP_ERROR(herror);
 
-        herror=hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);      // Tansfer data from host vector Y to device vector Y
+        herror=hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);      //Tansfer data from host vector Y to device vector Y
         CHECK_HIP_ERROR(herror);
 
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);              //Enable passing alpha parameter from pointer to host memory
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
                                                                                           automatically blocked until results ready*/
 
         CHECK_HIP_ERROR(herror);  
-    }                                                                                       // release device memory via helpers::DeviceVector destructors
+    }                                                                                      //Release device memory via helpers::DeviceVector destructors
   
     std::cout << "Output Vector Y" << std::endl;                                           //Print output result Vector
     helpers::printVector(hY);
