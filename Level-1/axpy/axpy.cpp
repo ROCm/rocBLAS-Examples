@@ -34,22 +34,40 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-    hipError_t     herror  = hipSuccess;                        //Initialize HIP error status to check the return status of the HIP API functions
-    rocblas_status rstatus = rocblas_status_success;            //Initialize rocBLAS status to check the return status of the rocBLAS API functions
+    //To check the return status of the HIP and rocBLAS API functions
+    hipError_t     herror  = hipSuccess;
+    rocblas_status rstatus = rocblas_status_success;
 
-    rocblas_int incx = options.incx;                            //Stride between consecutive values of input vector X (default value is 1)
-    rocblas_int incy = options.incy;                            //Stride between consecutive values of input vector Y (default value is 1)
-    rocblas_int n    = options.n;                               //Number of elements in input vector X and input vector Y (default value is 5)
+    //Stride between consecutive values of input vector X (default value is 1)
+    rocblas_int incx = options.incx;
 
-    float hAlpha = options.alpha;                               //Scalar value used for multiplication
-    size_t sizeX = (n * incx) >= 0 ? n*incx : -(n*incx);        //Adjusting the size of input vector X for value of stride (incx) not equal to 1
-    size_t sizeY = (n * incy) >= 0 ? n*incy : -(n*incy);        //Adjusting the size of input vector Y for value of stride (incy) not equal to 1
+    //Stride between consecutive values of input vector Y (default value is 1)
+    rocblas_int incy = options.incy;
 
-    std::vector<float> hX(sizeX);                               //Allocating memory for both the host input vectors X and Y
+    //Number of elements in input vector X and input vector Y (default value is 5)
+    rocblas_int n = options.n;
+
+    if(n <= 0) //Edge condition check
+    {
+        std::cout << "Value of 'n' should be greater than 0" << std::endl;
+        return 0;
+    }
+
+    //Scalar value used for multiplication
+    float hAlpha = options.alpha;
+
+    //Adjusting the size of input vector X for value of stride (incx) not equal to 1
+    size_t sizeX = (n * incx) >= 0 ? n * incx : -(n * incx);
+
+    //Adjusting the size of input vector Y for value of stride (incy) not equal to 1
+    size_t sizeY = (n * incy) >= 0 ? n * incy : -(n * incy);
+
+    //Allocating memory for both the host input vectors X and Y
+    std::vector<float> hX(sizeX);
     std::vector<float> hY(sizeY);
-    
 
-    helpers::fillVectorNormRand<float>(hX);                     //Intialising random values to both the host vectors X and Y
+    //Intialising random values to both the host vectors X and Y
+    helpers::fillVectorNormRand<float>(hX);
     helpers::fillVectorNormRand<float>(hY);
 
     std::cout << "Input Vectors (X)" << std::endl;
@@ -58,47 +76,61 @@ int main(int argc, char** argv)
     std::cout << "Input Vectors (Y)" << std::endl;
     helpers::printVector(hY);
 
-    std::vector<float> hYGold(hY);                              //Initialising the values for vector hYGold, this vector will be used as a Gold Standard  
-                                                                //for our results from rocBLAS SAXPY funtion 
-                                                                
-    for(int i=0; i < n; i++)                                    //CPU function for SAXPY
-        hYGold[i*incy] =  hAlpha * hX[i*incx] + hY[i*incy];
-    
-    rocblas_handle handle;                                      //Using rocblas API to create a handle
+    /*Initialising the values for vector hYGold, this vector will be used as a Gold Standard
+    for our results from rocBLAS SAXPY funtion*/
+    std::vector<float> hYGold(hY);
+
+    //CPU function for SAXPY
+    for(int i = 0; i < n; i++)
+        hYGold[i * incy] = hAlpha * hX[i * incx] + hY[i * incy];
+
+    //Using rocblas API to create a handle
+    rocblas_handle handle;
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     {
-
-        helpers::DeviceVector<float> dX(sizeX);                     //Allocating memory for both the both device vectors X and Y
+        //Allocating memory for both the both device vectors X and Y
+        helpers::DeviceVector<float> dX(sizeX);
         helpers::DeviceVector<float> dY(sizeY);
-    
-        herror=hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);      // Tansfer data from host vector X to device vector X
+
+        //Tansfer data from host vector X to device vector X
+        herror = hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);
+
         CHECK_HIP_ERROR(herror);
 
-        herror=hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);      // Tansfer data from host vector Y to device vector Y
+        // Tansfer data from host vector Y to device vector Y
+        herror = hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);
         CHECK_HIP_ERROR(herror);
 
-        rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);              //Enable passing alpha parameter from pointer to host memory
+        //Enable passing alpha parameter from pointer to host memory
+        rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        rstatus = rocblas_saxpy(handle, n, &hAlpha, dX, incx, dY, incy);                    //Saxpy calculation on device
+        //Saxpy calculation on device
+        rstatus = rocblas_saxpy(handle, n, &hAlpha, dX, incx, dY, incy);
 
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        herror=hipMemcpy(hY.data(), dY, sizeof(float) * sizeY, hipMemcpyDeviceToHost);      /*Transfer the result from device vector Y to host vector Y, 
-                                                                                          automatically blocked until results ready*/
+        /*Transfer the result from device vector Y to host vector Y, 
+        automatically blocked until results ready*/
+        herror = hipMemcpy(hY.data(), dY, sizeof(float) * sizeY, hipMemcpyDeviceToHost);
 
-        CHECK_HIP_ERROR(herror);  
-    }                                                                                       // release device memory via helpers::DeviceVector destructors
-  
-    std::cout << "Output Vector Y" << std::endl;                                           //Print output result Vector
+        CHECK_HIP_ERROR(herror);
+
+    } // release device memory via helpers::DeviceVector destructors
+
+    //Print output result Vector
+    std::cout << "Output Vector Y" << std::endl;
     helpers::printVector(hY);
-    std::cout << "Output Vector YGold" << std::endl;                                       //Print the CPU generated output
+
+    //Print the CPU generated output
+    std::cout << "Output Vector YGold" << std::endl;
     helpers::printVector(hYGold);
-  
-    float maxRelativeError = helpers::maxRelativeError(hY, hYGold);                    /*Helper function to check the Relative error between output generated 
-                                                                                         from rocBLAS API saxpy and the CPU function*/    
+
+    /*Helper function to check the Relative error between output generated 
+    from rocBLAS API saxpy and the CPU function*/
+    float maxRelativeError = helpers::maxRelativeError(hY, hYGold);
     float eps              = std::numeric_limits<float>::epsilon();
     float tolerance        = 10;
 
