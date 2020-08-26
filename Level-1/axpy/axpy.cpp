@@ -34,14 +34,11 @@ int main(int argc, char** argv)
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
-<<<<<<< HEAD
-    //To check the return status of the HIP and rocBLAS API functions
-    hipError_t     herror  = hipSuccess;
+    //Initialize HIP error to check the return status of the HIP API functions
+    hipError_t herror = hipSuccess;
+
+    //Initialize rocBLAS error to check the return status of the rocBLAS API functions
     rocblas_status rstatus = rocblas_status_success;
-=======
-    hipError_t     herror  = hipSuccess;                        //Initialize HIP error to check the return status of the HIP API functions
-    rocblas_status rstatus = rocblas_status_success;            //Initialize rocBLAS error to check the return status of the rocBLAS API functions
->>>>>>> b41ca2f5d97960add461a8c2261ba37d731da160
 
     //Stride between consecutive values of input vector X (default value is 1)
     rocblas_int incx = options.incx;
@@ -81,9 +78,8 @@ int main(int argc, char** argv)
     std::cout << "Input Vectors (Y)" << std::endl;
     helpers::printVector(hY);
 
-<<<<<<< HEAD
-    /*Initialising the values for vector hYGold, this vector will be used as a Gold Standard
-    for our results from rocBLAS SAXPY funtion*/
+    /*Initialising the values for vector hYGold, this vector will be used as a Gold Standard  
+    to compare our results from rocBLAS SAXPY funtion*/
     std::vector<float> hYGold(hY);
 
     //CPU function for SAXPY
@@ -92,41 +88,19 @@ int main(int argc, char** argv)
 
     //Using rocblas API to create a handle
     rocblas_handle handle;
-=======
-    std::vector<float> hYGold(hY);                              //Initialising the values for vector hYGold, this vector will be used as a Gold Standard  
-                                                                //to compare our results from rocBLAS SAXPY funtion 
-                                                                
-    for(int i=0; i < n; i++)                                    //CPU function for SAXPY
-        hYGold[i*incy] =  hAlpha * hX[i*incx] + hY[i*incy];
-    
-    rocblas_handle handle;                                      //Using rocblas API to create a handle
->>>>>>> b41ca2f5d97960add461a8c2261ba37d731da160
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
-
     {
-<<<<<<< HEAD
         //Allocating memory for both the both device vectors X and Y
         helpers::DeviceVector<float> dX(sizeX);
         helpers::DeviceVector<float> dY(sizeY);
 
         //Tansfer data from host vector X to device vector X
         herror = hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);
-
         CHECK_HIP_ERROR(herror);
 
-        // Tansfer data from host vector Y to device vector Y
+        //Tansfer data from host vector Y to device vector Y
         herror = hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);
-=======
-
-        helpers::DeviceVector<float> dX(sizeX);                                             //Allocating memory for both the both device vectors X and Y
-        helpers::DeviceVector<float> dY(sizeY);
-    
-        herror=hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);      //Tansfer data from host vector X to device vector X
-        CHECK_HIP_ERROR(herror);
-
-        herror=hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);      //Tansfer data from host vector Y to device vector Y
->>>>>>> b41ca2f5d97960add461a8c2261ba37d731da160
         CHECK_HIP_ERROR(herror);
 
         //Enable passing alpha parameter from pointer to host memory
@@ -143,18 +117,14 @@ int main(int argc, char** argv)
         herror = hipMemcpy(hY.data(), dY, sizeof(float) * sizeY, hipMemcpyDeviceToHost);
 
         CHECK_HIP_ERROR(herror);
-
     } // release device memory via helpers::DeviceVector destructors
 
-<<<<<<< HEAD
-    //Print output result Vector
+    CHECK_HIP_ERROR(herror);
+
+    //Release device memory via helpers::DeviceVector destructors
     std::cout << "Output Vector Y" << std::endl;
-=======
-        CHECK_HIP_ERROR(herror);  
-    }                                                                                      //Release device memory via helpers::DeviceVector destructors
-  
-    std::cout << "Output Vector Y" << std::endl;                                           //Print output result Vector
->>>>>>> b41ca2f5d97960add461a8c2261ba37d731da160
+
+    //Print output result Vector
     helpers::printVector(hY);
 
     //Print the CPU generated output
