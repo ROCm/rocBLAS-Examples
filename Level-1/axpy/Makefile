@@ -32,7 +32,7 @@ endif
 
 LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
-	LDFLAGS += -L$(HIP_PATH)/lib -lhiprtc -Wl,-rpath=$(HIP_PATH)/lib
+	LDFLAGS += -L$(HIP_PATH)/lib -lamdhip64 -Wl,-rpath=$(HIP_PATH)/lib
 endif
 
 RM = rm -f
