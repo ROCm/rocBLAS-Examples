@@ -90,6 +90,7 @@ int main(int argc, char** argv)
     rocblas_handle handle;
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
+    
     {
         //Allocating memory for both the both device vectors X and Y
         helpers::DeviceVector<float> dX(sizeX);
@@ -119,9 +120,6 @@ int main(int argc, char** argv)
         CHECK_HIP_ERROR(herror);
     } // release device memory via helpers::DeviceVector destructors
 
-    CHECK_HIP_ERROR(herror);
-
-    //Release device memory via helpers::DeviceVector destructors
     std::cout << "Output Vector Y" << std::endl;
 
     //Print output result Vector
