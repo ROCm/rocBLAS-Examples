@@ -90,7 +90,7 @@ int main(int argc, char** argv)
     rocblas_handle handle;
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
-    
+
     {
         //Allocating memory for both the both device vectors X and Y
         helpers::DeviceVector<float> dX(sizeX);
