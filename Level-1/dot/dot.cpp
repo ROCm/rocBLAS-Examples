@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     //Adjusting the size of input vector Y for value of stride (incy) not equal to 1
     size_t sizeY = (n * incy) >= 0 ? n * incy : -(n * incy);
 
-    //Allocating memory for the host input vectors X, Y and the host scalar result(To receive the result from the device)
+    //Allocating memory for the host input vectors X, Y and the host scalar result
     std::vector<float> hX(sizeX);
     std::vector<float> hY(sizeY);
 
@@ -95,7 +95,10 @@ int main(int argc, char** argv)
         //Allocating memory for the device vectors X, Y and the scalar Result
         helpers::DeviceVector<float> dX(sizeX);
         helpers::DeviceVector<float> dY(sizeY);
-        helpers::DeviceVector<float> dResult(sizeof(float));
+
+        //Enable passing hResult parameter from pointer to host memory
+        rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+        CHECK_ROCBLAS_STATUS(rstatus);
 
         //Tansfer data from host vector X to device vector X
         herror = hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);
@@ -106,15 +109,13 @@ int main(int argc, char** argv)
         CHECK_HIP_ERROR(herror);
 
         //Asynchronous SDOT calculation on device
-        rstatus = rocblas_sdot(handle, n, dX, incx, dY, incy, dResult);
+        rstatus = rocblas_sdot(handle, n, dX, incx, dY, incy, &hResult);
 
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        /*Transfer the result from device vector Y to host vector Y, 
-        automatically blocked until result is ready*/
-        herror = hipMemcpy(&hResult, dResult, sizeof(float) * 1, hipMemcpyDeviceToHost);
+        //automatically blocked until result is ready
+        hipDeviceSynchronize();
 
-        CHECK_HIP_ERROR(herror);
     } // release device memory via helpers::DeviceVector destructors
 
     //Print output result Vector
