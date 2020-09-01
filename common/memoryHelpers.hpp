@@ -111,8 +111,6 @@ namespace helpers
     class DeviceVector : private DeviceVectorMemory<T, PAD, U>
     {
     public:
-        // Must wrap constructor and destructor in functions to allow Google Test
-        // macros to work
         explicit DeviceVector(size_t s)
             : DeviceVectorMemory<T, PAD, U>(s)
         {

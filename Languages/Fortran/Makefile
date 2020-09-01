@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -16,20 +16,18 @@ ifeq (,$(ROCBLAS_PATH))
 endif
 
 EXE = $(shell basename $(CURDIR))
-SOURCES = $(wildcard *.c) 
-OBJECTS = $(patsubst %.c, %.o, $(SOURCES))
+SOURCES = $(wildcard *.f90) 
+OBJECTS = $(patsubst %.f90, %.o, $(SOURCES))
 
-CC=gcc
-# uncomment to use hip compiler
-#CC=$(HIPCXX)
-OPT = -ggdb -O0 -march=native -Wall
+CC=gfortran
+OPT = -ggdb -O0 -march=native -Wall -Wno-c-binding-type
 INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
-CCFLAGS = -std=c11 $(INC) $(OPT) 
+FFLAGS = $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
-	CCFLAGS += -D__HIP_PLATFORM_HCC__
+	FFLAGS += -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lc
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -L$(HIP_PATH)/lib -lamdhip64 -Wl,-rpath=$(HIP_PATH)/lib
 endif
@@ -40,14 +38,17 @@ RM = rm -f
 
 all: $(EXE)
 
-%.o: %.c
-	$(CC) $(CCFLAGS) -c $< -o $@
+%.o: %.f90
+	$(CC) $(FFLAGS) -c $< -o $@
 
-$(EXE): $(OBJECTS)
+rocblas.mod: $(ROCBLAS_PATH)/include/rocblas_module.f90
+	$(CC) $(FFLAGS) -c $<
+
+$(EXE): rocblas.mod $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 clean:
-	$(RM) $(EXE) $(OBJECTS)
+	$(RM) $(EXE) $(OBJECTS) *.mod rocblas_module.o
 
 run:
 	./$(EXE)
