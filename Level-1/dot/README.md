@@ -1,5 +1,5 @@
 # rocBLAS-Examples dot
-This example presents independent vectors 'X', 'Y' and a scalar value 'Result' transferred to the GPU device and calling the rocBLAS dot function.Then, The rocBLAS dot function computes the dot product of vectors 'X' and 'Y' and stores the output in 'Result'. Finally, the gold-standard value 'goldResult' (computed in CPU) along with the Result 'hResult' (Computed in GPU) are displayed for comparison.
+This example presents independent vectors 'X', 'Y' and a scalar value 'Result' transferred to the GPU device and calling the rocBLAS dot function. Then, the rocBLAS dot function computes the dot product of vectors 'X' and 'Y' and stores the output in 'Result'. Finally, the gold-standard value 'goldResult' (computed in CPU) along with the Result 'hResult' (Computed in GPU) are displayed for comparison.
 
 ## Documentation
 Run the example without any command line arguments to use default values (incx=1, incy=1, n=5).
