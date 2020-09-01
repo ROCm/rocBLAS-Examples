@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -132,18 +132,12 @@ int main(int argc, char** argv)
         }
 
         // copy data from CPU to device
-        CHECK_HIP_ERROR(
-            hipMemcpy(dA, hA.data(), sizeof(float) * sizeA, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(
-            hipMemcpy(dB, hB.data(), sizeof(float) * sizeB, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(dC,
-                                static_cast<void*>(hC.data()),
-                                sizeof(float) * sizeC,
-                                hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(dD,
-                                static_cast<void*>(hD.data()),
-                                sizeof(float) * sizeD,
-                                hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(float) * sizeA, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(float) * sizeB, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(
+            dC, static_cast<void*>(hC.data()), sizeof(float) * sizeC, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(
+            dD, static_cast<void*>(hD.data()), sizeof(float) * sizeD, hipMemcpyHostToDevice));
 
         // enable passing alpha parameter from pointer to host memory
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -180,8 +174,7 @@ int main(int argc, char** argv)
         CHECK_ROCBLAS_STATUS(rstatus);
 
         // fetch device memory results, automatically blocked until results ready
-        CHECK_HIP_ERROR(
-            hipMemcpy(hD.data(), dD, sizeof(float) * sizeD, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hD.data(), dD, sizeof(float) * sizeD, hipMemcpyDeviceToHost));
 
     } // release device memory via helpers::DeviceVector destructors
 
