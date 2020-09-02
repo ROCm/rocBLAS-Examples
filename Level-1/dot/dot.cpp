@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     gold standard to compare our result from rocBLAS SDOT funtion*/
     float goldResult = 0.0;
 
-    //CPU function for SAXPY
+    //CPU function for SDOT
     for(int i = 0; i < n; i++)
         goldResult += hX[i * incx] * hY[i * incy];
 
@@ -113,12 +113,12 @@ int main(int argc, char** argv)
 
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        //automatically blocked until result is ready
+        //Block until result is ready
         hipDeviceSynchronize();
 
     } // release device memory via helpers::DeviceVector destructors
 
-    //Print output result Vector
+    //Print the GPU generated output
     std::cout << "Output result" << std::endl;
     std::cout << hResult << std::endl;
 
