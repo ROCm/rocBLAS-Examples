@@ -155,6 +155,8 @@ int main(int argc, char** argv)
         //Asynchronously queuing up the work in the device (GPU) by the host (CPU)
         for(int i = 0; i < NUM_STREAMS; i++)
         {
+            //Associate each handle with a stream
+            rocblas_set_stream(handles[i], streams[i]);
             //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
             int start_offset_A = i * N * N;
 
