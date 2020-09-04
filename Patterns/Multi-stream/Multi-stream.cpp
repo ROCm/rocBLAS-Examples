@@ -213,10 +213,9 @@ int main(int argc, char** argv)
                                     sizeof(float) * N * abs_incy,
                                     hipMemcpyDeviceToHost,
                                     streams[i]);
-
-            // Blocks until all stream has completed all operations.
-            hipStreamSynchronize(streams[i]);
         }
+        //Blocks until all work in the streams are complete.
+        hipDeviceSynchronize();
         gpuTimer.stop();
     } // release device memory via helpers::DeviceVector destructors
 
