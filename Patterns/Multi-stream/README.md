@@ -1,5 +1,5 @@
-# rocBLAS-Examples multi-stream symv
-This example presents an input matrix 'A' which is 'N × N' symmetric matrix stored in upper triangular mode, input vectors 'X', 'Y' of size 'N x incx' and 'N x incy' respectively and 'Alpha' and 'Beta' are scalar values transferred from host (CPU) to the device (GPU) and calling the rocblas symv (symmetric matrix vector product) function. The Results are transferred from device to the host and compared against a CPU implementation and displayed.  This example uses the helper::GPUTimer which can be viewed to see how hip API calls can be used to time computation in a stream using events.
+# rocBLAS-Examples multi-stream 
+This example presents an input matrix 'A' which is 'N × N' symmetric matrix stored in upper triangular mode, input vectors 'X', 'Y' of size 'N x incx' and 'N x incy' respectively and 'Alpha' and 'Beta' are scalar values transferred asynchronously from host (CPU) to the device (GPU) and calling the rocblas symv (symmetric matrix vector product) function. The Results are transferred asynchronously from device to the host and compared against a CPU implementation and displayed.  This example uses the helper::GPUTimer which can be viewed to see how hip API calls can be used to time computation in a stream using events.
 
 ## Documentation
 Run the example without any command line arguments to use default values (N=5, alpha=1, beta=1, incx=1, incy=1).
