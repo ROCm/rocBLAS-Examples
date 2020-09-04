@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <vector>
 
-const int NUM_STREAMS = 4; 
+const int NUM_STREAMS = 4;
 
 int main(int argc, char** argv)
 {
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     hipError_t herror = hipSuccess;
 
     //Number of elements (default value is 5)
-    rocblas_int N    = options.N;
+    rocblas_int N = options.N;
 
     //Stride between consecutive values of input vector 'X' (default value is 1)
     rocblas_int incx = options.incx;
@@ -55,18 +55,18 @@ int main(int argc, char** argv)
     float h_Alpha = options.alpha;
 
     //Scalar 'beta' value used for multiplication
-    float h_Beta  = options.beta;
+    float h_Beta = options.beta;
 
     //Edge condition check
     if(N <= 0)
     {
-        std::cout <<"The value of 'n' should be greater than zero"<<std::endl;
+        std::cout << "The value of 'n' should be greater than zero" << std::endl;
         return 0;
     }
 
     //Size of input Matrix 'A'
-    rocblas_int lda   = N;
-    size_t size_A = lda * size_t(N) * NUM_STREAMS;
+    rocblas_int lda    = N;
+    size_t      size_A = lda * size_t(N) * NUM_STREAMS;
 
     //Absolute Value of 'incx' and 'incy'
     size_t abs_incx = incx >= 0 ? incx : -incx;
@@ -84,17 +84,19 @@ int main(int argc, char** argv)
     std::vector<float> h_Y(size_Y);
 
     //Creating a Identity matrix 'A' for size 'N * N * NUM_STREAMS'
-    for(int k = 0; k < NUM_STREAMS ; k++)
-    {   
-       for(int i = 0; i < N; i++)
-       {
+    for(int k = 0; k < NUM_STREAMS; k++)
+    {
+        for(int i = 0; i < N; i++)
+        {
             for(int j = 0; j < N; j++)
             {
                 int index = (k * N * N) + i + j * lda;
-                if(i==j) h_A[index] = 1;
-                else h_A[index] =0;
+                if(i == j)
+                    h_A[index] = 1;
+                else
+                    h_A[index] = 0;
             }
-       } 
+        }
     }
 
     //Intialising random values to both the host vectors 'X' and 'Y'
@@ -113,8 +115,9 @@ int main(int argc, char** argv)
     std::vector<float> h_Y_Gold(h_Y);
 
     //Matrix is identity so just doing simpler calculation over vectors
-    for(int i = 0; i < N*NUM_STREAMS; i++)
-        h_Y_Gold[i*abs_incy] = h_Alpha * 1.0 * h_X[i*abs_incx] + h_Beta * h_Y_Gold[i*abs_incy];
+    for(int i = 0; i < N * NUM_STREAMS; i++)
+        h_Y_Gold[i * abs_incy]
+            = h_Alpha * 1.0 * h_X[i * abs_incx] + h_Beta * h_Y_Gold[i * abs_incy];
 
     //Allocating different handles for different streams
     rocblas_handle handles[NUM_STREAMS];
@@ -123,11 +126,11 @@ int main(int argc, char** argv)
     //Using rocblas API to create handles and hip API to create streams
     for(rocblas_int i = 0; i < NUM_STREAMS; i++)
     {
-       rstatus = rocblas_create_handle(&handles[i]);
-       CHECK_ROCBLAS_STATUS(rstatus);
+        rstatus = rocblas_create_handle(&handles[i]);
+        CHECK_ROCBLAS_STATUS(rstatus);
 
-       herror = hipStreamCreate(&streams[i]);
-       CHECK_HIP_ERROR(herror);
+        herror = hipStreamCreate(&streams[i]);
+        CHECK_HIP_ERROR(herror);
     }
 
     //rocblas_fill indicates upper triangular mode
@@ -150,21 +153,36 @@ int main(int argc, char** argv)
         gpuTimer.start();
 
         //Asynchronously queuing up the work in the device (GPU) by the host (CPU)
-        for(int i=0 ; i< NUM_STREAMS; i++)
+        for(int i = 0; i < NUM_STREAMS; i++)
         {
             //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
             int start_offset_A = i * N * N;
-            herror =hipMemcpyAsync(d_A + start_offset_A, h_A.data()+ start_offset_A, sizeof(float) *N * N, hipMemcpyHostToDevice, streams[i]);
+
+            herror = hipMemcpyAsync(d_A + start_offset_A,
+                                    h_A.data() + start_offset_A,
+                                    sizeof(float) * N * N,
+                                    hipMemcpyHostToDevice,
+                                    streams[i]);
             CHECK_HIP_ERROR(herror);
 
             //'start_offset_X' points to the starting address of vector 'X' from where the data needs to be transferred from host to device
             int start_offset_X = i * N * abs_incx;
-            herror =hipMemcpyAsync(d_X + start_offset_X, h_X.data() + start_offset_X, sizeof(float) * N * abs_incx, hipMemcpyHostToDevice, streams[i]);
+
+            herror = hipMemcpyAsync(d_X + start_offset_X,
+                                    h_X.data() + start_offset_X,
+                                    sizeof(float) * N * abs_incx,
+                                    hipMemcpyHostToDevice,
+                                    streams[i]);
             CHECK_HIP_ERROR(herror);
 
             //'start_offset_Y' points to the starting address of vector 'Y' from where the data needs to be transferred from host to device
             int start_offset_Y = i * N * abs_incy;
-            herror =hipMemcpyAsync(d_Y + start_offset_Y, h_Y.data() + start_offset_Y, sizeof(float) * N * abs_incy, hipMemcpyHostToDevice, streams[i]);
+
+            herror = hipMemcpyAsync(d_Y + start_offset_Y,
+                                    h_Y.data() + start_offset_Y,
+                                    sizeof(float) * N * abs_incy,
+                                    hipMemcpyHostToDevice,
+                                    streams[i]);
             CHECK_HIP_ERROR(herror);
 
             //Enable passing alpha parameter from pointer to host memory
@@ -172,23 +190,37 @@ int main(int argc, char** argv)
             CHECK_ROCBLAS_STATUS(rstatus);
 
             //asynchronous calculation on device, returns before finished calculations
-            rstatus = rocblas_ssymv(handles[i], uplo, N, &h_Alpha, d_A + start_offset_A, lda, d_X + start_offset_X, abs_incx, &h_Beta, d_Y + start_offset_Y, abs_incy);
+            rstatus = rocblas_ssymv(handles[i],
+                                    uplo,
+                                    N,
+                                    &h_Alpha,
+                                    d_A + start_offset_A,
+                                    lda,
+                                    d_X + start_offset_X,
+                                    abs_incx,
+                                    &h_Beta,
+                                    d_Y + start_offset_Y,
+                                    abs_incy);
 
             //check that calculation was launched correctly on device, not that result was computed yet
             CHECK_ROCBLAS_STATUS(rstatus);
 
             //Asynchronous memory transfer from the device to the host
-            herror =hipMemcpyAsync(h_Y.data()+ start_offset_Y, d_Y + start_offset_Y, sizeof(float) * N * abs_incy, hipMemcpyDeviceToHost, streams[i]);
+            herror = hipMemcpyAsync(h_Y.data() + start_offset_Y,
+                                    d_Y + start_offset_Y,
+                                    sizeof(float) * N * abs_incy,
+                                    hipMemcpyDeviceToHost,
+                                    streams[i]);
 
             // Blocks until all stream has completed all operations.
             hipStreamSynchronize(streams[i]);
         }
         gpuTimer.stop();
-    }// release device memory via helpers::DeviceVector destructors
+    } // release device memory via helpers::DeviceVector destructors
 
     float max_relative_error = helpers::maxRelativeError(h_Y, h_Y_Gold);
-    float eps              = std::numeric_limits<float>::epsilon();
-    float tolerance        = 10;
+    float eps                = std::numeric_limits<float>::epsilon();
+    float tolerance          = 10;
 
     if(max_relative_error > eps * tolerance)
     {
