@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include "helpers.hpp"
 #include <hip/hip_runtime.h>
 #include <math.h>
+#include <omp.h>
 #include <rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,70 +153,80 @@ int main(int argc, char** argv)
         helpers::GPUTimer gpuTimer;
         gpuTimer.start();
 
-        //Asynchronously queuing up the work in the device (GPU) by the host (CPU)
-        for(int i = 0; i < NUM_STREAMS; i++)
+        //Asynchronously queuing up the work in the device (GPU) by  multiple-host (Multi-CPU)
+        //Private index 'i' for particular Thread_id
+        int i = 0;
+#pragma omp parallel default(shared) private(i)
         {
-            //Associate each handle with a stream
-            rocblas_set_stream(handles[i], streams[i]);
-            //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
-            int start_offset_A = i * N * N;
+#pragma omp for
+            for(i = 0; i < NUM_STREAMS; i++)
+            {
+                //Associate each handle with a stream
+                rocblas_set_stream(handles[i], streams[i]);
+                //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
+                int start_offset_A = i * N * N;
 
-            herror = hipMemcpyAsync(d_A + start_offset_A,
-                                    h_A.data() + start_offset_A,
-                                    sizeof(float) * N * N,
-                                    hipMemcpyHostToDevice,
-                                    streams[i]);
-            CHECK_HIP_ERROR(herror);
+                herror = hipMemcpyAsync(d_A + start_offset_A,
+                                        h_A.data() + start_offset_A,
+                                        sizeof(float) * N * N,
+                                        hipMemcpyHostToDevice,
+                                        streams[i]);
+                CHECK_HIP_ERROR(herror);
 
-            //'start_offset_X' points to the starting address of vector 'X' from where the data needs to be transferred from host to device
-            int start_offset_X = i * N * abs_incx;
+                //'start_offset_X' points to the starting address of vector 'X' from where the data needs to be transferred from host to device
+                int start_offset_X = i * N * abs_incx;
 
-            herror = hipMemcpyAsync(d_X + start_offset_X,
-                                    h_X.data() + start_offset_X,
-                                    sizeof(float) * N * abs_incx,
-                                    hipMemcpyHostToDevice,
-                                    streams[i]);
-            CHECK_HIP_ERROR(herror);
+                herror = hipMemcpyAsync(d_X + start_offset_X,
+                                        h_X.data() + start_offset_X,
+                                        sizeof(float) * N * abs_incx,
+                                        hipMemcpyHostToDevice,
+                                        streams[i]);
+                CHECK_HIP_ERROR(herror);
 
-            //'start_offset_Y' points to the starting address of vector 'Y' from where the data needs to be transferred from host to device
-            int start_offset_Y = i * N * abs_incy;
+                //'start_offset_Y' points to the starting address of vector 'Y' from where the data needs to be transferred from host to device
+                int start_offset_Y = i * N * abs_incy;
 
-            herror = hipMemcpyAsync(d_Y + start_offset_Y,
-                                    h_Y.data() + start_offset_Y,
-                                    sizeof(float) * N * abs_incy,
-                                    hipMemcpyHostToDevice,
-                                    streams[i]);
-            CHECK_HIP_ERROR(herror);
+                herror = hipMemcpyAsync(d_Y + start_offset_Y,
+                                        h_Y.data() + start_offset_Y,
+                                        sizeof(float) * N * abs_incy,
+                                        hipMemcpyHostToDevice,
+                                        streams[i]);
+                CHECK_HIP_ERROR(herror);
 
-            //Enable passing alpha parameter from pointer to host memory
-            rstatus = rocblas_set_pointer_mode(handles[i], rocblas_pointer_mode_host);
-            CHECK_ROCBLAS_STATUS(rstatus);
+                //Enable passing alpha parameter from pointer to host memory
+                rstatus = rocblas_set_pointer_mode(handles[i], rocblas_pointer_mode_host);
+                CHECK_ROCBLAS_STATUS(rstatus);
 
-            //asynchronous calculation on device, returns before finished calculations
-            rstatus = rocblas_ssymv(handles[i],
-                                    uplo,
-                                    N,
-                                    &h_Alpha,
-                                    d_A + start_offset_A,
-                                    lda,
-                                    d_X + start_offset_X,
-                                    abs_incx,
-                                    &h_Beta,
-                                    d_Y + start_offset_Y,
-                                    abs_incy);
+                //asynchronous calculation on device, returns before finished calculations
+                rstatus = rocblas_ssymv(handles[i],
+                                        uplo,
+                                        N,
+                                        &h_Alpha,
+                                        d_A + start_offset_A,
+                                        lda,
+                                        d_X + start_offset_X,
+                                        abs_incx,
+                                        &h_Beta,
+                                        d_Y + start_offset_Y,
+                                        abs_incy);
 
-            //check that calculation was launched correctly on device, not that result was computed yet
-            CHECK_ROCBLAS_STATUS(rstatus);
+                //check that calculation was launched correctly on device, not that result was computed yet
+                CHECK_ROCBLAS_STATUS(rstatus);
 
-            //Asynchronous memory transfer from the device to the host
-            herror = hipMemcpyAsync(h_Y.data() + start_offset_Y,
-                                    d_Y + start_offset_Y,
-                                    sizeof(float) * N * abs_incy,
-                                    hipMemcpyDeviceToHost,
-                                    streams[i]);
+                //Asynchronous memory transfer from the device to the host
+                herror = hipMemcpyAsync(h_Y.data() + start_offset_Y,
+                                        d_Y + start_offset_Y,
+                                        sizeof(float) * N * abs_incy,
+                                        hipMemcpyDeviceToHost,
+                                        streams[i]);
+
+                CHECK_HIP_ERROR(herror);
+            }
         }
         //Blocks until all work in the streams are complete.
-        hipDeviceSynchronize();
+        herror = hipDeviceSynchronize();
+        CHECK_HIP_ERROR(herror);
+
         gpuTimer.stop();
     } // release device memory via helpers::DeviceVector destructors
 
