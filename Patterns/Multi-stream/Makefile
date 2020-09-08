@@ -20,17 +20,17 @@ COMMON_PATH = ../../common
 SOURCES = $(wildcard *.cpp) $(wildcard $(COMMON_PATH)/*.cpp)
 OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES)) 
 
-CXX=g++
+CXX=g++ -fopenmp
 # uncomment to use hip compiler
 #CXX=$(HIPCXX)
 OPT = -g -Ofast -march=native -Wall
 INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include 
-CXXFLAGS = -std=c++14 $(INC) $(OPT) -fopenmp 
+CXXFLAGS = -std=c++14 $(INC) $(OPT) 
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++ -fopenmp
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -L$(HIP_PATH)/lib -lamdhip64 -Wl,-rpath=$(HIP_PATH)/lib
 endif
@@ -52,3 +52,4 @@ clean:
 
 run:
 	./$(EXE)
+
