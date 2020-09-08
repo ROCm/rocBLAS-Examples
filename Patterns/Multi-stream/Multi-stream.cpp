@@ -23,11 +23,11 @@ THE SOFTWARE.
 #include "helpers.hpp"
 #include <hip/hip_runtime.h>
 #include <math.h>
-#include <omp.h>
 #include <rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <omp.h>
 
 const int NUM_STREAMS = 4;
 
@@ -155,14 +155,15 @@ int main(int argc, char** argv)
 
         //Asynchronously queuing up the work in the device (GPU) by  multiple-host (Multi-CPU)
         //Private index 'i' for particular Thread_id
-        int i = 0;
-#pragma omp parallel default(shared) private(i)
-        {
-#pragma omp for
+        int i=0;
+        #pragma omp parallel default(shared) private(i)
+        { 
+            #pragma omp for
             for(i = 0; i < NUM_STREAMS; i++)
             {
                 //Associate each handle with a stream
                 rocblas_set_stream(handles[i], streams[i]);
+                
                 //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
                 int start_offset_A = i * N * N;
 
@@ -220,12 +221,12 @@ int main(int argc, char** argv)
                                         hipMemcpyDeviceToHost,
                                         streams[i]);
 
-                CHECK_HIP_ERROR(herror);
+                CHECK_HIP_ERROR(herror);           
             }
         }
         //Blocks until all work in the streams are complete.
         herror = hipDeviceSynchronize();
-        CHECK_HIP_ERROR(herror);
+        CHECK_HIP_ERROR(herror); 
 
         gpuTimer.stop();
     } // release device memory via helpers::DeviceVector destructors
