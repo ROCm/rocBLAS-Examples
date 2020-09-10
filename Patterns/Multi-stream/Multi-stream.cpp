@@ -85,19 +85,12 @@ int main(int argc, char** argv)
     std::vector<float> h_Y(size_Y);
 
     //Creating a Identity matrix 'A' for size 'N * N * NUM_STREAMS'
-    for(int k = 0; k < NUM_STREAMS; k++)
+    for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
     {
-        for(int i = 0; i < N; i++)
-        {
-            for(int j = 0; j < N; j++)
-            {
-                int index = (k * N * N) + i + j * lda;
-                if(i == j)
-                    h_A[index] = 1;
-                else
-                    h_A[index] = 0;
-            }
-        }
+        //'host_start_offset_A' points to the starting address to create a identity matrix
+        int host_start_offset_A = stream_Id * N * N;
+
+        helpers::matIdentity(h_A.data() + host_start_offset_A, N, N, lda);
     }
 
     //Intialising random values to both the host vectors 'X' and 'Y'
@@ -114,23 +107,29 @@ int main(int argc, char** argv)
     /*Initialising the values for vector 'h_Y_Gold', this vector will be used as a Gold Standard  
     to compare our results from rocBLAS SYMV funtion*/
     std::vector<float> h_Y_Gold(h_Y);
+    h_Y_Gold = h_Y;
 
     //Matrix is identity so just doing simpler calculation over vectors
-    for(int i = 0; i < N * NUM_STREAMS; i++)
-        h_Y_Gold[i * abs_incy]
-            = h_Alpha * 1.0 * h_X[i * abs_incx] + h_Beta * h_Y_Gold[i * abs_incy];
+    for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
+    {
+        int start_offset = stream_Id * N;
+        for(int i = 0; i < N; i++)
+            h_Y_Gold[start_offset + i * abs_incy]
+                = h_Alpha * 1.0 * h_X[start_offset + i * abs_incx]
+                  + h_Beta * h_Y_Gold[start_offset + i * abs_incy];
+    }
 
     //Allocating different handles for different streams
     rocblas_handle handles[NUM_STREAMS];
     hipStream_t    streams[NUM_STREAMS];
 
     //Using rocblas API to create handles and hip API to create streams
-    for(rocblas_int i = 0; i < NUM_STREAMS; i++)
+    for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
     {
-        rstatus = rocblas_create_handle(&handles[i]);
+        rstatus = rocblas_create_handle(&handles[stream_Id]);
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        herror = hipStreamCreate(&streams[i]);
+        herror = hipStreamCreate(&streams[stream_Id]);
         CHECK_HIP_ERROR(herror);
     }
 
@@ -153,83 +152,97 @@ int main(int argc, char** argv)
         helpers::GPUTimer gpuTimer;
         gpuTimer.start();
 
-        //Asynchronously queuing up the work in the device (GPU) by  multiple-host (Multi-CPU)
-        //Private index 'i' for particular Thread_id
-        int i = 0;
-#pragma omp parallel default(shared) private(i)
-        {
+//Asynchronously queuing up the work in the device (GPU) by  multiple-host (Multi-CPU)
 #pragma omp for
-            for(i = 0; i < NUM_STREAMS; i++)
-            {
-                //Associate each handle with a stream
-                rocblas_set_stream(handles[i], streams[i]);
+        for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
+        {
+            //Associate each handle with a stream
+            rocblas_set_stream(handles[stream_Id], streams[stream_Id]);
 
-                //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
-                int start_offset_A = i * N * N;
+            //'start_offset_A' points to the starting address of matrix 'A' from where the data needs to be transferred from host to device
+            int start_offset_A = stream_Id * N * N;
 
-                herror = hipMemcpyAsync(d_A + start_offset_A,
-                                        h_A.data() + start_offset_A,
-                                        sizeof(float) * N * N,
-                                        hipMemcpyHostToDevice,
-                                        streams[i]);
-                CHECK_HIP_ERROR(herror);
+            herror = hipMemcpyAsync(d_A + start_offset_A,
+                                    h_A.data() + start_offset_A,
+                                    sizeof(float) * N * N,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
 
-                //'start_offset_X' points to the starting address of vector 'X' from where the data needs to be transferred from host to device
-                int start_offset_X = i * N * abs_incx;
+            //'start_offset_X' points to the starting address of vector 'X' from where the data needs to be transferred from host to device
+            int start_offset_X = stream_Id * N * abs_incx;
 
-                herror = hipMemcpyAsync(d_X + start_offset_X,
-                                        h_X.data() + start_offset_X,
-                                        sizeof(float) * N * abs_incx,
-                                        hipMemcpyHostToDevice,
-                                        streams[i]);
-                CHECK_HIP_ERROR(herror);
+            herror = hipMemcpyAsync(d_X + start_offset_X,
+                                    h_X.data() + start_offset_X,
+                                    sizeof(float) * N * abs_incx,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
 
-                //'start_offset_Y' points to the starting address of vector 'Y' from where the data needs to be transferred from host to device
-                int start_offset_Y = i * N * abs_incy;
+            //'start_offset_Y' points to the starting address of vector 'Y' from where the data needs to be transferred from host to device
+            int start_offset_Y = stream_Id * N * abs_incy;
+            herror             = hipMemcpyAsync(d_Y + start_offset_Y,
+                                    h_Y.data() + start_offset_Y,
+                                    sizeof(float) * N * abs_incy,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
 
-                herror = hipMemcpyAsync(d_Y + start_offset_Y,
-                                        h_Y.data() + start_offset_Y,
-                                        sizeof(float) * N * abs_incy,
-                                        hipMemcpyHostToDevice,
-                                        streams[i]);
-                CHECK_HIP_ERROR(herror);
+            //Enable passing alpha parameter from pointer to host memory
+            rstatus = rocblas_set_pointer_mode(handles[stream_Id], rocblas_pointer_mode_host);
+            CHECK_ROCBLAS_STATUS(rstatus);
 
-                //Enable passing alpha parameter from pointer to host memory
-                rstatus = rocblas_set_pointer_mode(handles[i], rocblas_pointer_mode_host);
-                CHECK_ROCBLAS_STATUS(rstatus);
+            //asynchronous calculation on device, returns before finished calculations
+            rstatus = rocblas_ssymv(handles[stream_Id],
+                                    uplo,
+                                    N,
+                                    &h_Alpha,
+                                    d_A + start_offset_A,
+                                    lda,
+                                    d_X + start_offset_X,
+                                    abs_incx,
+                                    &h_Beta,
+                                    d_Y + start_offset_Y,
+                                    abs_incy);
 
-                //asynchronous calculation on device, returns before finished calculations
-                rstatus = rocblas_ssymv(handles[i],
-                                        uplo,
-                                        N,
-                                        &h_Alpha,
-                                        d_A + start_offset_A,
-                                        lda,
-                                        d_X + start_offset_X,
-                                        abs_incx,
-                                        &h_Beta,
-                                        d_Y + start_offset_Y,
-                                        abs_incy);
+            //check that calculation was launched correctly on device, not that result was computed yet
+            CHECK_ROCBLAS_STATUS(rstatus);
 
-                //check that calculation was launched correctly on device, not that result was computed yet
-                CHECK_ROCBLAS_STATUS(rstatus);
+            //Asynchronous memory transfer from the device to the host
+            herror = hipMemcpyAsync(h_Y.data() + start_offset_Y,
+                                    d_Y + start_offset_Y,
+                                    sizeof(float) * N * abs_incy,
+                                    hipMemcpyDeviceToHost,
+                                    streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
 
-                //Asynchronous memory transfer from the device to the host
-                herror = hipMemcpyAsync(h_Y.data() + start_offset_Y,
-                                        d_Y + start_offset_Y,
-                                        sizeof(float) * N * abs_incy,
-                                        hipMemcpyDeviceToHost,
-                                        streams[i]);
-
-                CHECK_HIP_ERROR(herror);
-            }
+            herror = hipStreamSynchronize(streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
         }
-        //Blocks until all work in the streams are complete.
+
+        /*//Blocks until all work in the streams are complete.
         herror = hipDeviceSynchronize();
-        CHECK_HIP_ERROR(herror);
+        CHECK_HIP_ERROR(herror);*/
 
         gpuTimer.stop();
     } // release device memory via helpers::DeviceVector destructors
+
+    //Using rocblas API to destroy handles and hip API to destroy streams
+    for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
+    {
+        rstatus = rocblas_destroy_handle(handles[stream_Id]);
+        CHECK_ROCBLAS_STATUS(rstatus);
+
+        herror = hipStreamDestroy(streams[stream_Id]);
+        CHECK_HIP_ERROR(herror);
+    }
+
+    // print input
+    std::cout << "Output generated by GPU" << std::endl;
+    helpers::printVector(h_Y);
+
+    std::cout << "Output generated by CPU" << std::endl;
+    helpers::printVector(h_Y_Gold);
 
     float max_relative_error = helpers::maxRelativeError(h_Y, h_Y_Gold);
     float eps                = std::numeric_limits<float>::epsilon();
@@ -245,16 +258,6 @@ int main(int argc, char** argv)
     }
 
     std::cout << ": max. relative err. = " << max_relative_error << std::endl;
-
-    //Using rocblas API to destroy handles and hip API to destroy streams
-    for(rocblas_int i = 0; i < NUM_STREAMS; i++)
-    {
-        rstatus = rocblas_destroy_handle(handles[i]);
-        CHECK_ROCBLAS_STATUS(rstatus);
-
-        herror = hipStreamDestroy(streams[i]);
-        CHECK_HIP_ERROR(herror);
-    }
     return EXIT_SUCCESS;
 }
 //End of program
