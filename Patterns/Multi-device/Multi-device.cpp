@@ -23,11 +23,11 @@ THE SOFTWARE.
 #include "helpers.hpp"
 #include <hip/hip_runtime.h>
 #include <math.h>
+#include <omp.h>
 #include <rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <omp.h>
 
 //Number of streams to be launched per device
 const int NUM_STREAMS = 2;
@@ -46,9 +46,9 @@ int main(int argc, char** argv)
 
     //Determine the number of available GPU devices
     int NUM_DEVICES;
-    herror =hipGetDeviceCount(&NUM_DEVICES);
+    herror = hipGetDeviceCount(&NUM_DEVICES);
     CHECK_HIP_ERROR(herror);
-    std::cout << "The total number of available GPU devices are "<< NUM_DEVICES<<std::endl;
+    std::cout << "The total number of available GPU devices are " << NUM_DEVICES << std::endl;
 
     /*'M' and 'K' determines the number of rows and columns respectively in Matrix 'A' (no transpose)
       'K' and 'N' determines the number of rows and columns respectively in Matrix 'B' (no transpose)
@@ -74,48 +74,49 @@ int main(int argc, char** argv)
     const rocblas_operation transA = rocblas_operation_none;
     const rocblas_operation transB = rocblas_operation_none;
 
-    rocblas_int lda, ldb, ldc, size_A, device_size_A, stream_size_A, size_B, device_size_B, stream_size_B, size_C, device_size_C, stream_size_C ;
-    int         strideA1, strideA2, strideB1, strideB2;
+    rocblas_int lda, ldb, ldc, size_A, device_size_A, stream_size_A, size_B, device_size_B,
+        stream_size_B, size_C, device_size_C, stream_size_C;
+    int strideA1, strideA2, strideB1, strideB2;
 
     //Initializing matrix dimensions according to the rocblas_operation
     if(transA == rocblas_operation_none)
     {
-        lda      = M;
-        size_A    = K * lda * NUM_DEVICES * NUM_STREAMS;
+        lda           = M;
+        size_A        = K * lda * NUM_DEVICES * NUM_STREAMS;
         device_size_A = K * lda * NUM_STREAMS;
         stream_size_A = K * lda;
-        strideA1 = 1;
-        strideA2 = lda;
+        strideA1      = 1;
+        strideA2      = lda;
     }
     else
     {
-        lda      = K;
-        size_A    = M * lda * NUM_DEVICES * NUM_STREAMS;
+        lda           = K;
+        size_A        = M * lda * NUM_DEVICES * NUM_STREAMS;
         device_size_A = M * lda * NUM_STREAMS;
-        stream_size_A = M * lda ;
-        strideA1 = lda;
-        strideA2 = 1;
+        stream_size_A = M * lda;
+        strideA1      = lda;
+        strideA2      = 1;
     }
     if(transB == rocblas_operation_none)
     {
-        ldb      = K;
-        size_B    = N * ldb * NUM_DEVICES * NUM_STREAMS;
-        device_size_B = N * ldb *  NUM_STREAMS;
+        ldb           = K;
+        size_B        = N * ldb * NUM_DEVICES * NUM_STREAMS;
+        device_size_B = N * ldb * NUM_STREAMS;
         stream_size_B = N * ldb;
-        strideB1 = 1;
-        strideB2 = ldb;
+        strideB1      = 1;
+        strideB2      = ldb;
     }
     else
     {
-        ldb      = N;
-        size_B    = K * ldb * NUM_DEVICES * NUM_STREAMS;
+        ldb           = N;
+        size_B        = K * ldb * NUM_DEVICES * NUM_STREAMS;
         device_size_B = K * ldb * NUM_STREAMS;
         stream_size_B = K * ldb;
-        strideB1 = ldb;
-        strideB2 = 1;
+        strideB1      = ldb;
+        strideB2      = 1;
     }
-    ldc   = M;
-    size_C = N * ldc * NUM_DEVICES * NUM_STREAMS;
+    ldc           = M;
+    size_C        = N * ldc * NUM_DEVICES * NUM_STREAMS;
     device_size_C = N * ldc * NUM_STREAMS;
     stream_size_C = N * ldc;
 
@@ -124,45 +125,46 @@ int main(int argc, char** argv)
     std::vector<float> h_A(size_A, 1);
     std::vector<float> h_B(size_B);
     std::vector<float> h_C(size_C, 0);
-    std::vector<float> h_Gold(size_C,0);
+    std::vector<float> h_Gold(size_C, 0);
 
     //Helper functions to create an indentity matrix
     //Creating a Identity matrix 'B' for size 'K * N * NUM_STREAMS * NUM_DEVICES'
-    for(int device_Id = 0; device_Id < NUM_DEVICES; device_Id ++)
+    for(int device_Id = 0; device_Id < NUM_DEVICES; device_Id++)
     {
-        for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id ++)
+        for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
         {
             //'start_offset_B' points to the starting address of matrix 'B' in accordance with the NUM_STREAMS and NUM_DEVICES
-            int start_offset_B = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
-            start_offset_B = stream_Id > 0 && device_Id > 0 ? start_offset_B * stream_Id : start_offset_B;
+            int start_offset_B
+                = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
+            start_offset_B
+                = stream_Id > 0 && device_Id > 0 ? start_offset_B * stream_Id : start_offset_B;
 
             helpers::matIdentity(h_B.data() + start_offset_B, K, N, ldb);
         }
     }
-    
+
     //Time data to device, computation, and data from device back to host
     helpers::GPUTimer gpuTimer;
     gpuTimer.start();
 
-    //Setting up a device per CPU
-    #pragma omp parallel for
-    for (int device_Id = 0; device_Id < NUM_DEVICES; device_Id++)
-    { 
+//Setting up a device per CPU
+#pragma omp parallel for
+    for(int device_Id = 0; device_Id < NUM_DEVICES; device_Id++)
+    {
         herror = hipSetDevice(device_Id);
         CHECK_HIP_ERROR(herror);
 
-        #pragma omp cancellation point parallel
+#pragma omp cancellation point parallel
         //Allocating device memory for input matrices 'A', 'B' and 'C'
         helpers::DeviceVector<float> d_A(device_size_A);
         helpers::DeviceVector<float> d_B(device_size_B);
         helpers::DeviceVector<float> d_C(device_size_C);
 
-           
         if(!d_A || !d_B || !d_C)
         {
             herror = hipErrorOutOfMemory;
             CHECK_HIP_ERROR(herror);
-            #pragma omp cancel parallel
+#pragma omp cancel parallel
         }
 
         //Allocating different handles for different streams per device
@@ -186,47 +188,82 @@ int main(int argc, char** argv)
             rocblas_set_stream(handles[stream_Id], streams[stream_Id]);
 
             //'host_start_offset_A' points to the starting address of the host matrix 'A' from where the data needs to be transferred from the host to the device
-            int host_start_offset_A = device_Id > 0 ? device_Id * NUM_STREAMS * M * K : stream_Id * M * K;
-            host_start_offset_A = stream_Id > 0 && device_Id > 0 ? host_start_offset_A * stream_Id : host_start_offset_A;
-            
+            int host_start_offset_A
+                = device_Id > 0 ? device_Id * NUM_STREAMS * M * K : stream_Id * M * K;
+            host_start_offset_A = stream_Id > 0 && device_Id > 0 ? host_start_offset_A * stream_Id
+                                                                 : host_start_offset_A;
+
             //'device_start_offset_A' points to the starting address of the device matrix 'A' from where the data needs to be transferred from the host to the device
             int device_start_offset_A = stream_Id * M * K;
 
-            herror = hipMemcpyAsync(d_A + device_start_offset_A, h_A.data() + host_start_offset_A, sizeof(float) * stream_size_A, hipMemcpyHostToDevice, streams[stream_Id]);
+            herror = hipMemcpyAsync(d_A + device_start_offset_A,
+                                    h_A.data() + host_start_offset_A,
+                                    sizeof(float) * stream_size_A,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
             CHECK_HIP_ERROR(herror);
 
             //'host_start_offset_B' points to the starting address of host matrix 'B' from where the data needs to be transferred from the host to the device
-            int host_start_offset_B = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
-            host_start_offset_B = stream_Id > 0 && device_Id > 0 ? host_start_offset_B * stream_Id : host_start_offset_B;
+            int host_start_offset_B
+                = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
+            host_start_offset_B = stream_Id > 0 && device_Id > 0 ? host_start_offset_B * stream_Id
+                                                                 : host_start_offset_B;
 
             //'device_start_offset_B' points to the starting address of the device matrix 'B' from where the data needs to be transferred from the host to the device
             int device_start_offset_B = stream_Id * K * N;
-            herror = hipMemcpyAsync(d_B + device_start_offset_B, h_B.data() + host_start_offset_B, sizeof(float) * stream_size_B, hipMemcpyHostToDevice, streams[stream_Id]);
+            herror                    = hipMemcpyAsync(d_B + device_start_offset_B,
+                                    h_B.data() + host_start_offset_B,
+                                    sizeof(float) * stream_size_B,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
             CHECK_HIP_ERROR(herror);
 
             //'host_start_offset_C' points to the starting address of host matrix 'C' from where the data needs to be transferred from the host to the device
-            int host_start_offset_C = device_Id > 0 ? device_Id * NUM_STREAMS * M * N : stream_Id * M * N;
-            host_start_offset_C = stream_Id > 0 && device_Id > 0 ? host_start_offset_C * stream_Id : host_start_offset_C;
+            int host_start_offset_C
+                = device_Id > 0 ? device_Id * NUM_STREAMS * M * N : stream_Id * M * N;
+            host_start_offset_C = stream_Id > 0 && device_Id > 0 ? host_start_offset_C * stream_Id
+                                                                 : host_start_offset_C;
 
             //'device_start_offset_C' points to the starting address of the device matrix 'C' from where the data needs to be transferred from the host to the device
             int device_start_offset_C = stream_Id * M * N;
-            herror = hipMemcpyAsync(d_C + device_start_offset_C, h_C.data() + host_start_offset_C, sizeof(float) * stream_size_C, hipMemcpyHostToDevice, streams[stream_Id]);
+            herror                    = hipMemcpyAsync(d_C + device_start_offset_C,
+                                    h_C.data() + host_start_offset_C,
+                                    sizeof(float) * stream_size_C,
+                                    hipMemcpyHostToDevice,
+                                    streams[stream_Id]);
             CHECK_HIP_ERROR(herror);
 
             //Enable passing alpha parameter from pointer to host memory
             rstatus = rocblas_set_pointer_mode(handles[stream_Id], rocblas_pointer_mode_host);
-            CHECK_ROCBLAS_STATUS(rstatus); 
+            CHECK_ROCBLAS_STATUS(rstatus);
 
             //Asynchronous calculation on device, returns before finished calculations
-            rstatus = rocblas_sgemm(handles[stream_Id], transA, transB, M, N, K, &h_Alpha, d_A + device_start_offset_A, lda, d_B + device_start_offset_B, ldb, &h_Beta, d_C + device_start_offset_C, ldc);
-                
+            rstatus = rocblas_sgemm(handles[stream_Id],
+                                    transA,
+                                    transB,
+                                    M,
+                                    N,
+                                    K,
+                                    &h_Alpha,
+                                    d_A + device_start_offset_A,
+                                    lda,
+                                    d_B + device_start_offset_B,
+                                    ldb,
+                                    &h_Beta,
+                                    d_C + device_start_offset_C,
+                                    ldc);
+
             //Check that calculation was launched correctly on device, not that result was computed yet
             CHECK_ROCBLAS_STATUS(rstatus);
 
             //Fetch device memory results
-            herror = hipMemcpyAsync(h_C.data() + host_start_offset_C , d_C + device_start_offset_C, sizeof(float) * stream_size_C, hipMemcpyDeviceToHost, streams[stream_Id]);  
-            CHECK_HIP_ERROR(herror); 
-        } 
+            herror = hipMemcpyAsync(h_C.data() + host_start_offset_C,
+                                    d_C + device_start_offset_C,
+                                    sizeof(float) * stream_size_C,
+                                    hipMemcpyDeviceToHost,
+                                    streams[stream_Id]);
+            CHECK_HIP_ERROR(herror);
+        }
 
         //Blocks until all work in the streams are complete.
         herror = hipDeviceSynchronize();
@@ -240,43 +277,49 @@ int main(int argc, char** argv)
 
             herror = hipStreamDestroy(streams[i]);
             CHECK_HIP_ERROR(herror);
-        }   
+        }
 
-    } // release device memory via helpers::DeviceVector destructors 
+    } // release device memory via helpers::DeviceVector destructors
 
     gpuTimer.stop();
- 
+
     //Calculate gold standard result using CPU
-    for(int device_Id = 0; device_Id < NUM_DEVICES; device_Id ++)
+    for(int device_Id = 0; device_Id < NUM_DEVICES; device_Id++)
     {
-        for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id ++)
+        for(int stream_Id = 0; stream_Id < NUM_STREAMS; stream_Id++)
         {
             //'start_offset_A' points to the starting address of matrix 'A' which is needed for 'matMatMult' helper function
-            int start_offset_A = device_Id > 0 ? device_Id * NUM_STREAMS * M * K : stream_Id * M * K;
-            start_offset_A = stream_Id > 0 && device_Id > 0 ? start_offset_A * stream_Id : start_offset_A;
+            int start_offset_A
+                = device_Id > 0 ? device_Id * NUM_STREAMS * M * K : stream_Id * M * K;
+            start_offset_A
+                = stream_Id > 0 && device_Id > 0 ? start_offset_A * stream_Id : start_offset_A;
 
             //'start_offset_B' points to the starting address of matrix 'B' which is needed for 'matMatMult' helper function
-            int start_offset_B = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
-            start_offset_B = stream_Id > 0 && device_Id > 0 ? start_offset_B * stream_Id : start_offset_B;
+            int start_offset_B
+                = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
+            start_offset_B
+                = stream_Id > 0 && device_Id > 0 ? start_offset_B * stream_Id : start_offset_B;
 
             //'start_offset_C' points to the starting address of matrix 'C' which is needed for 'matMatMult' helper function
-            int start_offset_C = device_Id > 0 ? device_Id * NUM_STREAMS * M * N : stream_Id * M * N;
-            start_offset_C = stream_Id > 0 && device_Id > 0 ? start_offset_C * stream_Id : start_offset_C;
+            int start_offset_C
+                = device_Id > 0 ? device_Id * NUM_STREAMS * M * N : stream_Id * M * N;
+            start_offset_C
+                = stream_Id > 0 && device_Id > 0 ? start_offset_C * stream_Id : start_offset_C;
 
             helpers::matMatMult<float>(h_Alpha,
-                                  h_Beta,
-                                  M,
-                                  N,
-                                  K,
-                                  h_A.data() + start_offset_A,
-                                  strideA1,
-                                  strideA2,
-                                  h_B.data() + start_offset_B,
-                                  strideB1,
-                                  strideB2,
-                                  h_Gold.data() + start_offset_C,
-                                  1,
-                                  ldc);
+                                       h_Beta,
+                                       M,
+                                       N,
+                                       K,
+                                       h_A.data() + start_offset_A,
+                                       strideA1,
+                                       strideA2,
+                                       h_B.data() + start_offset_B,
+                                       strideB1,
+                                       strideB2,
+                                       h_Gold.data() + start_offset_C,
+                                       1,
+                                       ldc);
         }
     }
 
