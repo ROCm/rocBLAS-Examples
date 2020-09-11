@@ -12,7 +12,7 @@ endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
 ifeq (,$(ROCBLAS_PATH))
-        ROCBLAS_PATH= $(wildcard /home/nelumala/rocBLAS-internal/build/release/rocblas-install)
+        ROCBLAS_PATH= $(wildcard /opt/rocm/rocblas)
 endif
 
 EXE = $(shell basename $(CURDIR))
