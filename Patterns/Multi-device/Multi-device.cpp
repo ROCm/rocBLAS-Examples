@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     //Edge condition check
     if(K < 0 || M < 0 || N < 0)
     {
-        std::cout << "The value of 'n' should be greater than zero" << std::endl;
+        std::cout << "The value of 'N', 'M' and 'K' should be greater than zero" << std::endl;
         return 0;
     }
 
