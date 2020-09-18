@@ -115,6 +115,25 @@ namespace helpers
     }
 
     template <typename T>
+    double maxError(std::vector<T>& A, std::vector<T>& reference)
+    {
+        double maxError = double(std::numeric_limits<T>::min());
+
+        size_t n = A.size();
+        for(size_t i = 0; i < n; ++i)
+        {
+            double gold = double(reference[i]);
+            if(gold != 0)
+            {
+                double Error = (gold - double(A[i]));
+                Error        = Error > 0 ? Error : -Error;
+                maxError     = Error < maxError ? maxError : Error;
+            }
+        }
+        return maxError;
+    }
+
+    template <typename T>
     double maxRelativeError(std::vector<T>& A, std::vector<T>& reference)
     {
         double maxRelativeError = double(std::numeric_limits<T>::min());
@@ -125,7 +144,7 @@ namespace helpers
             double gold = double(reference[i]);
             if(gold != 0)
             {
-                double relativeError = (gold - double(A[i])) / double(gold);
+                double relativeError = (gold - double(A[i])) / (gold);
                 relativeError        = relativeError > 0 ? relativeError : -relativeError;
                 maxRelativeError
                     = relativeError < maxRelativeError ? maxRelativeError : relativeError;
