@@ -2,7 +2,7 @@
 
 
 EXE = $(shell basename $(CURDIR))
-SOURCES = CMakeLists.txt
+SOURCES = ./CMakeLists.txt ./src/CMakeLists.txt
 BUILD = build
 
 RM = rm -rf 
@@ -13,7 +13,7 @@ RM = rm -rf
 all: $(BUILD)
 
 $(BUILD): $(SOURCES)
-	mkdir $(BUILD)
+	mkdir -p $(BUILD)
 	cp Makefile.cmake $(BUILD)
 	make -C $(BUILD) -f Makefile.cmake
 

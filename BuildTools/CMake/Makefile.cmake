@@ -11,6 +11,6 @@ CXX=g++
 .PHONY: runcmake
 
 runcmake:
-	CXX=$(CXX) cmake .. -DCMAKE_PREFIX_PATH=$(ROCM_PATH)
+	CXX=$(CXX) cmake -DCMAKE_PREFIX_PATH=$(ROCM_PATH) ..
 	make
 
