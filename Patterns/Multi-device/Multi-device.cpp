@@ -332,7 +332,7 @@ int main(int argc, char** argv)
 
     float max_relative_error = helpers::maxError(h_C, h_Gold);
     float eps                = std::numeric_limits<float>::epsilon();
-    float tolerance          = K * sqrt(K);
+    float tolerance          = K * sqrt(K) * 10;
 
     if(max_relative_error > eps * tolerance)
     {
