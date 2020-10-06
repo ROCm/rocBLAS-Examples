@@ -11,6 +11,7 @@ CXX=g++
 .PHONY: runcmake
 
 runcmake:
+    # CMAKE_PREFIX_PATH is required on some distributions so that find_package(rocblas) can find the cmake config files
 	CXX=$(CXX) cmake -DCMAKE_PREFIX_PATH=$(ROCM_PATH) ..
 	make
 
