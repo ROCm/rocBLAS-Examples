@@ -1,5 +1,5 @@
 # rocBLAS-Examples CMake
-This rocBLAS example shows the use of CMake to build an excutable that utilizes rocBLAS.  The main.cpp C++ code illustrates nothing new, and the standard Makefiles provide for the entire rocBLAS-Examples make build system so they can be ignored.  Thus the only files of interest are the CMake files CMakeLists.txt and src/CMakeLists.txt.   The CMake project depends only on the rocBLAS package which automatically brings in the rocBLAS dependencies for hip to allow inclusion of hip header files in main.cpp without explicit include search paths being added.  This example assumes you are already familiar with CMake as it will not explain the structure.
+This example shows how to use rocBLAS in a C++ program with a CMake build system.  The focus for this example is the setup in [CMakeLists.txt](CMakeLists.txt) and [src/CMakeLists.txt](src/CMakeLists.txt).  The C++ code in `main.cpp` is just a trivial example of a rocBLAS call, and the Makefiles are just the part of the rocBLAS-Examples make build system, so they can be ignored.  The CMake project depends only on the rocBLAS package, which automatically brings in the rocBLAS dependencies for hip. This allows inclusion of hip header files in `main.cpp` without having to explicitly specify include search paths. 
 
 ## Documentation
 Run the example without any command line arguments to use default values for a matrix size.  Otherwise a single argument runs the geam function with (M=N=argument with alpha=1, beta=2).
@@ -17,4 +17,3 @@ These examples require that you have an installation of rocBLAS on your machine.
     cmake ..
     make
     ./src/example-cmake
-
