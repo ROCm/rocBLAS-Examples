@@ -177,7 +177,7 @@ namespace helpers
             return mData[n];
         }
 
-        operator T* *()
+        operator T**()
         {
             return mData;
         }

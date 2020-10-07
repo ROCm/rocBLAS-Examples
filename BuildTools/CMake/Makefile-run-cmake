@@ -1,0 +1,17 @@
+# Copyright 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+
+ROCM_PATH?= $(wildcard /opt/rocm)
+ifeq (,$(ROCM_PATH))
+        ROCM_PATH=
+endif
+
+CXX=g++
+#CXX=hipcc
+
+.PHONY: runcmake
+
+runcmake:
+    # CMAKE_PREFIX_PATH is required on some distributions so that find_package(rocblas) can find the cmake config files
+	CXX=$(CXX) cmake -DCMAKE_PREFIX_PATH=$(ROCM_PATH) ..
+	make
+
