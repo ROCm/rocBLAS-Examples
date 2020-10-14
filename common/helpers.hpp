@@ -122,7 +122,7 @@ namespace helpers
         size_t n = A.size();
         for(size_t i = 0; i < n; ++i)
         {
-            double gold = double(reference[i]);
+            double gold  = double(reference[i]);
             double Error = gold != 0 ? gold - double(A[i]) : double(A[i]);
             Error        = Error > 0 ? Error : -Error;
             maxError     = Error < maxError ? maxError : Error;
@@ -138,11 +138,10 @@ namespace helpers
         size_t n = A.size();
         for(size_t i = 0; i < n; ++i)
         {
-            double gold = double(reference[i]);
+            double gold          = double(reference[i]);
             double relativeError = gold != 0 ? (gold - double(A[i])) / (gold) : double(A[i]);
             relativeError        = relativeError > 0 ? relativeError : -relativeError;
-            maxRelativeError
-                    = relativeError < maxRelativeError ? maxRelativeError : relativeError;
+            maxRelativeError = relativeError < maxRelativeError ? maxRelativeError : relativeError;
         }
         return maxRelativeError;
     }
@@ -172,7 +171,7 @@ namespace helpers
                     {
                         float relativeError = A[i + j * lda + iBatch * stride];
                     }
-                    relativeError       = relativeError > 0 ? relativeError : -relativeError;
+                    relativeError = relativeError > 0 ? relativeError : -relativeError;
                     maxRelativeError
                         = relativeError < maxRelativeError ? maxRelativeError : relativeError;
                 }
