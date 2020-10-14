@@ -123,12 +123,9 @@ namespace helpers
         for(size_t i = 0; i < n; ++i)
         {
             double gold = double(reference[i]);
-            if(gold != 0)
-            {
-                double Error = (gold - double(A[i]));
-                Error        = Error > 0 ? Error : -Error;
-                maxError     = Error < maxError ? maxError : Error;
-            }
+            double Error = gold != 0 ? gold - double(A[i]) : double(A[i]);
+            Error        = Error > 0 ? Error : -Error;
+            maxError     = Error < maxError ? maxError : Error;
         }
         return maxError;
     }
@@ -142,13 +139,10 @@ namespace helpers
         for(size_t i = 0; i < n; ++i)
         {
             double gold = double(reference[i]);
-            if(gold != 0)
-            {
-                double relativeError = (gold - double(A[i])) / (gold);
-                relativeError        = relativeError > 0 ? relativeError : -relativeError;
-                maxRelativeError
+            double relativeError = gold != 0 ? (gold - double(A[i])) / (gold) : double(A[i]);
+            relativeError        = relativeError > 0 ? relativeError : -relativeError;
+            maxRelativeError
                     = relativeError < maxRelativeError ? maxRelativeError : relativeError;
-            }
         }
         return maxRelativeError;
     }
@@ -169,7 +163,15 @@ namespace helpers
                 for(size_t j = 0; j < N; ++j)
                 {
                     T     gold          = reference[i + j * lda + iBatch * stride];
-                    float relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
+                    float relativeError = std::numeric_limits<T>::min();
+                    if(gold != 0)
+                    {
+                        float relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
+                    }
+                    else
+                    {
+                        float relativeError = A[i + j * lda + iBatch * stride];
+                    }
                     relativeError       = relativeError > 0 ? relativeError : -relativeError;
                     maxRelativeError
                         = relativeError < maxRelativeError ? maxRelativeError : relativeError;
