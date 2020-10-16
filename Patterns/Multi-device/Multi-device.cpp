@@ -332,8 +332,8 @@ int main(int argc, char** argv)
 
     float max_error     = helpers::maxError(h_C, h_Gold);
     float eps           = std::numeric_limits<float>::epsilon();
-    float tolerance     = 10;     // if tests fail try increasing tolerance
-    float allowed_error = eps * tolerance * K * sqrt(K);  // allows for roundoff error 
+    float tolerance     = 10; // if tests fail try increasing tolerance
+    float allowed_error = eps * tolerance * K * sqrt(K); // allows for roundoff error
 
     if(max_error > allowed_error)
     {
@@ -343,7 +343,6 @@ int main(int argc, char** argv)
     {
         std::cout << "PASS";
     }
-
 
     std::cout << ": max_error = " << max_error << std::endl;
 
