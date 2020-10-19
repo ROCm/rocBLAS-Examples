@@ -330,11 +330,12 @@ int main(int argc, char** argv)
               << K << "," << lda << ", " << ldb << ", " << ldc << ", " << NUM_STREAMS << ", "
               << NUM_DEVICES << std::endl;
 
-    float max_relative_error = helpers::maxError(h_C, h_Gold);
-    float eps                = std::numeric_limits<float>::epsilon();
-    float tolerance          = K * sqrt(K);
+    float max_error     = helpers::maxError(h_C, h_Gold);
+    float eps           = std::numeric_limits<float>::epsilon();
+    float tolerance     = 10; // if tests fail try increasing tolerance
+    float allowed_error = eps * tolerance * K * sqrt(K); // allows for roundoff error
 
-    if(max_relative_error > eps * tolerance)
+    if(max_error > allowed_error)
     {
         std::cout << "FAIL";
     }
@@ -343,7 +344,7 @@ int main(int argc, char** argv)
         std::cout << "PASS";
     }
 
-    std::cout << ": max. relative err. = " << max_relative_error << std::endl;
+    std::cout << ": max_err = " << max_error << std::endl;
 
     return EXIT_SUCCESS;
 }
