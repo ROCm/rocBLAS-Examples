@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 int main(int argc, char** argv)
 {
-    helpers::ArgParser options("xyn");
+    helpers::ArgParser options("xn");
     if(!options.validArgs(argc, argv))
         return EXIT_FAILURE;
 
@@ -42,9 +42,6 @@ int main(int argc, char** argv)
 
     //Stride between consecutive values of input vector X (default value is 1)
     rocblas_int incx = options.incx;
-
-    //Stride between consecutive values of input vector Y (default value is 1)
-    rocblas_int incy = options.incy;
 
     //Number of elements in input vector X and input vector Y (default value is 5)
     rocblas_int n = options.n;
@@ -59,32 +56,28 @@ int main(int argc, char** argv)
     //Adjusting the size of input vector X for value of stride (incx) not equal to 1
     size_t sizeX = (n * incx) >= 0 ? n * incx : -(n * incx);
 
-    //Adjusting the size of input vector Y for value of stride (incy) not equal to 1
-    size_t sizeY = (n * incy) >= 0 ? n * incy : -(n * incy);
-
-    //Allocating memory for the host input vectors X, Y and the host scalar result
+    //Allocating memory for the host input vector X and the host scalar result
     std::vector<float> hX(sizeX);
-    std::vector<float> hY(sizeY);
+    float              hResult = 0.0;
 
-    float hResult = 0.0;
-
-    //Initialising random values to both the host vectors X and Y
+    //Initialising random values to the host vector X
     helpers::fillVectorNormRand<float>(hX);
-    helpers::fillVectorNormRand<float>(hY);
 
     std::cout << "Input Vectors (X)" << std::endl;
     helpers::printVector(hX);
 
-    std::cout << "Input Vectors (Y)" << std::endl;
-    helpers::printVector(hY);
+    //accumulate is used to store the sum of squares of vector X
+    float accumulate = 0.0;
 
-    /*Initialising the scalar goldResult, goldResult will be used as a 
-    gold standard to compare our result from rocBLAS SDOT funtion*/
+    /*goldResult is used to store the square root of accumulate 
+    and is used to compare our result from rocBLAS NRM2 funtion*/
     float goldResult = 0.0;
 
-    //CPU function for SDOT
+    //CPU function for NRM2
     for(int i = 0; i < n; i++)
-        goldResult += hX[i * incx] * hY[i * incy];
+        accumulate += (hX[i * incx] * hX[i * incx]);
+
+    goldResult = sqrt(accumulate);
 
     //Using rocblas API to create a handle
     rocblas_handle handle;
@@ -92,9 +85,8 @@ int main(int argc, char** argv)
     CHECK_ROCBLAS_STATUS(rstatus);
 
     {
-        //Allocating memory for the device vectors X, Y and the scalar Result
+        //Allocating memory for the device vector X
         helpers::DeviceVector<float> dX(sizeX);
-        helpers::DeviceVector<float> dY(sizeY);
 
         //Enable passing hResult parameter from pointer to host memory
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -104,21 +96,17 @@ int main(int argc, char** argv)
         herror = hipMemcpy(dX, hX.data(), sizeof(float) * sizeX, hipMemcpyHostToDevice);
         CHECK_HIP_ERROR(herror);
 
-        //Tansfer data from host vector Y to device vector Y
-        herror = hipMemcpy(dY, hY.data(), sizeof(float) * sizeY, hipMemcpyHostToDevice);
-        CHECK_HIP_ERROR(herror);
-
-        //Asynchronous SDOT calculation on device
-        rstatus = rocblas_sdot(handle, n, dX, incx, dY, incy, &hResult);
+        //Asynchronous NRM2 calculation on device
+        rstatus = rocblas_snrm2(handle, n, dX, incx, &hResult);
 
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        //Block until result is ready
+        //block until result is ready
         hipDeviceSynchronize();
 
     } // release device memory via helpers::DeviceVector destructors
 
-    //Print the GPU generated output
+    //Print GPU generated output
     std::cout << "Output result" << std::endl;
     std::cout << hResult << std::endl;
 
