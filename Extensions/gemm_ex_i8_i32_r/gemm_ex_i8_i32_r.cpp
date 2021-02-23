@@ -104,6 +104,12 @@ int main(int argc, char** argv)
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
 
+    // ROCm 4.2: query the preferable int8 layout to see if we need to pack to int8x4 or not
+    rocblas_gemm_flags inLayoutFlag;
+    rocblas_query_int8_layout_flag(handle, &inLayoutFlag);
+    // bitwise-or your original flags with the queried result
+    flags |= inLayoutFlag;
+
     // Naming: dX is in GPU (device) memory. hX is in CPU (host) memory
     std::vector<int8_t>  hA(sizeA), hAPacked(sizeA);
     std::vector<int8_t>  hB(sizeB), hBPacked(sizeA);
@@ -116,7 +122,10 @@ int main(int argc, char** argv)
     helpers::fillVectorUniformIntRand(hC, 1, 3);
     helpers::fillVectorUniformIntRand(hD, 1, 3);
 
-    if(transA == rocblas_operation_none)
+    // if the queried preferable layout is packed-int8x4?
+    bool use_packed_int8x4 = flags & rocblas_gemm_flags_pack_int8x4;
+
+    if(transA == rocblas_operation_none && use_packed_int8x4 == true)
     {
         // pack i8_r hA matrix so 4 entries in k dimension are contiguous
         int nb = 4;
@@ -130,10 +139,11 @@ int main(int argc, char** argv)
     }
     else
     {
+        // no need to pack if the flag is not set, or transA != none
         hAPacked = hA;
     }
 
-    if(transB == rocblas_operation_transpose)
+    if(transB == rocblas_operation_transpose && use_packed_int8x4 == true)
     {
         // pack i8_r hB matrix so 4 entries in k dimension are contiguous
         int nb = 4;
@@ -147,6 +157,7 @@ int main(int argc, char** argv)
     }
     else
     {
+        // no need to pack if the flag is not set, or transB != transpose
         hBPacked = hB;
     }
 
@@ -214,8 +225,9 @@ int main(int argc, char** argv)
 
     } // release device memory via helpers::DeviceVector destructors
 
-    std::cout << "M, N, K, lda, ldb, ldc, ldd = " << M << ", " << N << ", " << K << ", " << lda
-              << ", " << ldb << ", " << ldc << ", " << ldd << std::endl;
+    std::cout << "M, N, K, lda, ldb, ldc, ldd, packing-flag = " << M << ", " << N << ", " << K
+              << ", " << lda << ", " << ldb << ", " << ldc << ", " << ldd << ", " << flags
+              << std::endl;
 
     // calculate gold standard using CPU
     helpers::matMatMult<int32_t, int8_t>(hAlpha,
