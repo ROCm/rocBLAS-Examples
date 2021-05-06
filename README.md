@@ -28,10 +28,10 @@ If you require rocBLAS it is available at
 This repository can be cloned into any directory where you want to build the examples. 
 
 ## Building
-These examples require that you have an installation of rocBLAS on your machine.  You do not require sudo or other access to build these examples which default to compile with gcc but can also use the the hipcc compiler from the rocBLAS installation.  The compiler must support the c++14 standard. The use of hipcc can be set by uncommenting a line in the Makefiles.  The Makefiles support building against a locally built but not installed version of rocBLAS by setting the environment variable ROCBLAS_PATH, e.g.
+These examples require that you have an installation of rocBLAS on your machine.  You do not require sudo or other access to build these examples which default to compile with gcc but can also use the hipcc compiler from the rocBLAS installation.  The compiler must support the c++14 standard. The use of hipcc can be set by uncommenting a line in the Makefiles.  The Makefiles support building against a locally built but not installed version of rocBLAS by setting the environment variable ROCBLAS_PATH, e.g.
 <tt>export ROCBLAS_PATH=/...yourlocalpath.../rocBLAS/build/release/rocblas-install</tt>
 
-After cloning this repository you can build all the examples using make in the top level directory, or run make in a sub-level directory to build a specific example:
+After cloning this repository you can build all the examples using make in the top-level directory, or run make in a sub-level directory to build a specific example:
 
     cd Level-1/swap 
     make
