@@ -1,5 +1,5 @@
 # rocBLAS-Examples gemm_ex_f16_r
-Example showing moving matrix rocblas_f32 data to the GPU device and calling the rocblas gemm_ex (general matrix matrix product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.
+Example showing moving matrix float16 data to the GPU device and calling the rocblas gemm_ex (general matrix matrix product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.
 
 ## Documentation
 Run the example without any command line arguments to use default values.
