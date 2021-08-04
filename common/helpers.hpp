@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "error_macros.h"
 #include "memoryHelpers.hpp"
 #include "timers.hpp"
+#include <hip/hip_complex.h>
 #include <cstdio>
 #include <iostream>
 #include <random>
@@ -165,11 +166,11 @@ namespace helpers
                     float relativeError = std::numeric_limits<T>::min();
                     if(gold != 0)
                     {
-                        float relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
+                        relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
                     }
                     else
                     {
-                        float relativeError = A[i + j * lda + iBatch * stride];
+                        relativeError = A[i + j * lda + iBatch * stride];
                     }
                     relativeError = relativeError > 0 ? relativeError : -relativeError;
                     maxRelativeError
@@ -282,6 +283,18 @@ namespace helpers
             for(int j = 0; j < N; j++)
             {
                 A[i + j * lda] = T(i == j);
+            }
+        }
+    }
+
+    template <>
+    void matIdentity(hipFloatComplex* A, int M, int N, size_t lda)
+    {
+        for(int i = 0; i < M; i++)
+        {
+            for(int j = 0; j < N; j++)
+            {
+                A[i + j * lda] = hipFloatComplex(i == j, 0);
             }
         }
     }
