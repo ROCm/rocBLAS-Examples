@@ -1,5 +1,5 @@
 # rocBLAS-Examples gemm_ex_i8_i32_r
-Example showing moving 8-bit integer and 32-bit integer matrix data types to the GPU device and calling the rocblas gemm_ex (general matrix matrix product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.  
+Example showing moving 8-bit integer and 32-bit integer matrix data types to the GPU device and calling the rocblas gemm_ex (general matrix matrix product) function. Results are fetched from GPU and compared against a CPU implementation and displayed.  Input data should or should not be packed to i8x4 depending on the GPU capability. This example calls a query function to get the capability which is available from ROCm 4.2. So ROCm 4.2 or above is required to run this example.
 
 ## Documentation
 Run the example without any command line arguments to use default values.
