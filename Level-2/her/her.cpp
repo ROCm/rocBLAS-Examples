@@ -21,14 +21,14 @@ THE SOFTWARE.
 */
 
 #include "helpers.hpp"
-#include <hip/hip_runtime.h>
+#include <complex>
 #include <hip/hip_complex.h>
+#include <hip/hip_runtime.h>
 #include <math.h>
 #include <rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <complex>
 
 int main(int argc, char** argv)
 {
@@ -47,7 +47,6 @@ int main(int argc, char** argv)
 
     size_t sizeX, absIncx;
 
- 
     rocblas_int lda   = N;
     size_t      sizeA = lda * size_t(N);
 
@@ -59,11 +58,12 @@ int main(int argc, char** argv)
 
     std::vector<hipFloatComplex> hA(sizeA);
 
-    // we are using std::complex for it's operators and it has same memory layout 
+    // we are using std::complex for it's operators and it has same memory layout
     // as hipFloatComplex so can copy the data into the array for use in the rocblas C API
-    std::vector<std::complex<float>> hX(sizeX, std::complex<float>(2.0f, 0.5f));
+    std::vector<std::complex<float>> hX(sizeX);
+    helpers::fillVectorUniformIntRand(hX);
 
-    std::vector<hipFloatComplex> hAGold(sizeA); 
+    std::vector<hipFloatComplex> hAGold(sizeA);
 
     // initialize simple data for simple host side reference computation
     helpers::matIdentity(hA.data(), N, N, lda);
@@ -81,7 +81,6 @@ int main(int argc, char** argv)
         helpers::DeviceVector<rocblas_float_complex> dA(sizeA);
         helpers::DeviceVector<rocblas_float_complex> dX(sizeX);
 
-
         if((!dA && sizeA) || (!dX && sizeX))
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
@@ -93,8 +92,10 @@ int main(int argc, char** argv)
         gpuTimer.start();
 
         // copy data from CPU to device (all 3 complex types same memory layout)
-        CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(hipFloatComplex) * sizeA, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(dX, hX.data(), sizeof(std::complex<float>) * sizeX, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(
+            hipMemcpy(dA, hA.data(), sizeof(hipFloatComplex) * sizeA, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(
+            hipMemcpy(dX, hX.data(), sizeof(std::complex<float>) * sizeX, hipMemcpyHostToDevice));
 
         // enable passing alpha and beta parameters from pointer to host memory
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -108,7 +109,8 @@ int main(int argc, char** argv)
         CHECK_ROCBLAS_STATUS(rstatus);
 
         // fetch device memory results, automatically blocked until results ready
-        CHECK_HIP_ERROR(hipMemcpy(hA.data(), dA, sizeof(hipFloatComplex) * sizeA, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(hA.data(), dA, sizeof(hipFloatComplex) * sizeA, hipMemcpyDeviceToHost));
 
         gpuTimer.stop();
 
@@ -120,26 +122,29 @@ int main(int argc, char** argv)
     for(int i = 0; i < N; i++)
     {
         // matrix is identity so just doing simpler calculation over x vectors
-
-        for (int j = 0; j < N; j++)
+        for(int j = 0; j < N; j++)
         {
-            std::complex<float> r = hX[i] * std::conj(hX[j]);
+            std::complex<float> r = hX[j] * std::conj(hX[i]);
             r *= std::complex<float>(hAlpha, 0);
 
             // using hip helper function hipCaddf to add hip complex type
-            hAGold[i*lda + j] = hipCaddf( hipFloatComplex(r.real(), r.imag()), hAGold[i*lda + j] );
+            hAGold[i * lda + j]
+                = hipCaddf(hipFloatComplex(r.real(), r.imag()), hAGold[i * lda + j]);
         }
     }
 
     bool fail = false;
     for(int i = 0; i < N; i++)
     {
-        for (int j = 0; j < N; j++)
+        for(int j = 0; j < N; j++)
         {
-            if (uplo == rocblas_fill_upper && j > i) continue;
-            else if (uplo != rocblas_fill_upper && j < i) continue;
+            if(uplo == rocblas_fill_upper && j > i)
+                continue;
+            else if(uplo != rocblas_fill_upper && j < i)
+                continue;
 
-            if (hAGold[i*lda+j] != hA[i*lda+j]) fail = true;
+            if(hAGold[i * lda + j] != hA[i * lda + j])
+                fail = true;
         }
     }
 

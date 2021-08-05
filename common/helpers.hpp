@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "memoryHelpers.hpp"
 #include "timers.hpp"
 #include <hip/hip_complex.h>
+#include <complex>
 #include <cstdio>
 #include <iostream>
 #include <random>
@@ -99,7 +100,7 @@ namespace helpers
                     A[i + j * lda + iBatch * stride] = randomHPLGenerator<T>();
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_same<T, std::complex<float> >{} && !std::is_same<T, hipFloatComplex>{}, int> = 0>
     void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
     {
         srand(int(time(NULL)));
@@ -112,6 +113,23 @@ namespace helpers
         {
             int rval = distrib(gen);
             arr[i]   = T(rval);
+        }
+    }
+
+    template <typename T, std::enable_if_t<std::is_same<T, std::complex<float> >{} || std::is_same<T, hipFloatComplex>{}, int> = 0>
+    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
+    {
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_int_distribution<int> distrib{-range, range};
+        distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i += inc)
+        {
+            int rval = distrib(gen);
+            int ival = distrib(gen);
+            arr[i]   = T(rval, ival);
         }
     }
 
