@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,8 +19,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 #include "helpers.hpp"
+#include <cmath>
 #include <hip/hip_runtime.h>
 #include <math.h>
 #include <rocblas.h>
@@ -47,20 +47,20 @@ int main(int argc, char** argv)
     rocblas_int N = options.N;
     rocblas_int K = options.K;
 
-    constexpr rocblas_datatype aType = rocblas_datatype_i8_r; // _r for real vs. _c for complex
-    constexpr rocblas_datatype bType = rocblas_datatype_i8_r;
-    constexpr rocblas_datatype cType = rocblas_datatype_i32_r;
-    constexpr rocblas_datatype dType = rocblas_datatype_i32_r;
+    constexpr rocblas_datatype aType = rocblas_datatype_f16_r; // _r for real vs. _c for complex
+    constexpr rocblas_datatype bType = rocblas_datatype_f16_r;
+    constexpr rocblas_datatype cType = rocblas_datatype_f16_r;
+    constexpr rocblas_datatype dType = rocblas_datatype_f16_r;
+    constexpr rocblas_datatype computeType = rocblas_datatype_f32_r;
 
-    constexpr rocblas_datatype computeType   = rocblas_datatype_i32_r;
-    rocblas_gemm_algo          algo          = rocblas_gemm_algo_standard;
-    int32_t                    solutionIndex = 0;
-    uint32_t                   flags         = 0;
+    rocblas_gemm_algo algo          = rocblas_gemm_algo_standard;
+    int32_t           solutionIndex = 0;
+    uint32_t          flags         = 0;
 
-    int32_t hAlpha = options.alpha; // Same datatype as compute_type
-    int32_t hBeta  = options.beta; // Same datatype as compute_type
+    float hAlpha = options.alpha; // Same datatype as compute_type
+    float hBeta  = options.beta; // Same datatype as compute_type
 
-    const rocblas_operation transA = rocblas_operation_none;
+    const rocblas_operation transA = rocblas_operation_transpose;
     const rocblas_operation transB = rocblas_operation_none;
 
     rocblas_int lda, ldb, ldc, ldd, sizeA, sizeB, sizeC, sizeD;
@@ -104,71 +104,26 @@ int main(int argc, char** argv)
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
 
-    // ROCm 4.2: query the preferable int8 layout to see if we need to pack to int8x4 or not
-    rocblas_gemm_flags inLayoutFlag;
-    rocblas_query_int8_layout_flag(handle, &inLayoutFlag);
-    // bitwise-or your original flags with the queried result
-    flags |= inLayoutFlag;
-
     // Naming: dX is in GPU (device) memory. hX is in CPU (host) memory
-    std::vector<int8_t>  hA(sizeA), hAPacked(sizeA);
-    std::vector<int8_t>  hB(sizeB), hBPacked(sizeA);
-    std::vector<int32_t> hC(sizeC);
-    std::vector<int32_t> hD(sizeD);
-    std::vector<int32_t> hDGold(sizeD);
+    std::vector<_Float16> hA(sizeA);
+    std::vector<_Float16> hB(sizeB);
+    std::vector<_Float16> hC(sizeC);
+    std::vector<_Float16> hD(sizeD);
+    std::vector<_Float16> hDGold(sizeD);
 
     helpers::fillVectorUniformIntRand(hA, 1, 3);
     helpers::fillVectorUniformIntRand(hB, 1, 3);
     helpers::fillVectorUniformIntRand(hC, 1, 3);
     helpers::fillVectorUniformIntRand(hD, 1, 3);
 
-    // if the queried preferable layout is packed-int8x4?
-    bool use_packed_int8x4 = flags & rocblas_gemm_flags_pack_int8x4;
-
-    if(transA == rocblas_operation_none && use_packed_int8x4 == true)
-    {
-        // pack i8_r hA matrix so 4 entries in k dimension are contiguous
-        int nb = 4;
-        for(int iM = 0; iM < M; iM++)
-        {
-            for(int iK = 0; iK < K; iK++)
-            {
-                hAPacked[iK % nb + (iM + (iK / nb) * lda) * nb] = hA[iM + iK * lda];
-            }
-        }
-    }
-    else
-    {
-        // no need to pack if the flag is not set, or transA != none
-        hAPacked = hA;
-    }
-
-    if(transB == rocblas_operation_transpose && use_packed_int8x4 == true)
-    {
-        // pack i8_r hB matrix so 4 entries in k dimension are contiguous
-        int nb = 4;
-        for(int iN = 0; iN < M; iN++)
-        {
-            for(int iK = 0; iK < K; iK++)
-            {
-                hBPacked[iK % nb + (iN + (iK / nb) * lda) * nb] = hB[iN + iK * lda];
-            }
-        }
-    }
-    else
-    {
-        // no need to pack if the flag is not set, or transB != transpose
-        hBPacked = hB;
-    }
-
     hDGold = hD;
 
-    { // allocate memory on device
-
-        helpers::DeviceVector<int8_t>  dA(sizeA);
-        helpers::DeviceVector<int8_t>  dB(sizeB);
-        helpers::DeviceVector<int32_t> dC(sizeC);
-        helpers::DeviceVector<int32_t> dD(sizeD);
+    {
+        // allocate memory on device
+        helpers::DeviceVector<_Float16> dA(sizeA);
+        helpers::DeviceVector<_Float16> dB(sizeB);
+        helpers::DeviceVector<_Float16> dC(sizeC);
+        helpers::DeviceVector<_Float16> dD(sizeD);
 
         if(!dA || !dB || !dC || !dD)
         {
@@ -177,14 +132,12 @@ int main(int argc, char** argv)
         }
 
         // copy data from CPU to device
-        CHECK_HIP_ERROR(
-            hipMemcpy(dA, hAPacked.data(), sizeof(int8_t) * sizeA, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(
-            hipMemcpy(dB, hBPacked.data(), sizeof(int8_t) * sizeB, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(_Float16) * sizeA, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(_Float16) * sizeB, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(
-            dC, static_cast<void*>(hC.data()), sizeof(int32_t) * sizeC, hipMemcpyHostToDevice));
+            dC, static_cast<void*>(hC.data()), sizeof(_Float16) * sizeC, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(
-            dD, static_cast<void*>(hD.data()), sizeof(int32_t) * sizeD, hipMemcpyHostToDevice));
+            dD, static_cast<void*>(hD.data()), sizeof(_Float16) * sizeD, hipMemcpyHostToDevice));
 
         // enable passing alpha parameter from pointer to host memory
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -221,35 +174,34 @@ int main(int argc, char** argv)
         CHECK_ROCBLAS_STATUS(rstatus);
 
         // fetch device memory results, automatically blocked until results ready
-        CHECK_HIP_ERROR(hipMemcpy(hD.data(), dD, sizeof(int32_t) * sizeD, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hD.data(), dD, sizeof(_Float16) * sizeD, hipMemcpyDeviceToHost));
 
     } // release device memory via helpers::DeviceVector destructors
 
-    std::cout << "M, N, K, lda, ldb, ldc, ldd, packing-flag = " << M << ", " << N << ", " << K
-              << ", " << lda << ", " << ldb << ", " << ldc << ", " << ldd << ", " << flags
-              << std::endl;
+    std::cout << "M, N, K, lda, ldb, ldc, ldd = " << M << ", " << N << ", " << K << ", " << lda
+              << ", " << ldb << ", " << ldc << ", " << ldd << std::endl;
 
     // calculate gold standard using CPU
-    helpers::matMatMult<int32_t, int8_t>(hAlpha,
-                                         hBeta,
-                                         M,
-                                         N,
-                                         K,
-                                         hA.data(),
-                                         strideA1,
-                                         strideA2,
-                                         hB.data(),
-                                         strideB1,
-                                         strideB2,
-                                         hC.data(),
-                                         1,
-                                         ldc,
-                                         hDGold.data(),
-                                         1,
-                                         ldd);
+    helpers::matMatMultMixPrec(hAlpha,
+                               hBeta,
+                               M,
+                               N,
+                               K,
+                               hA.data(),
+                               strideA1,
+                               strideA2,
+                               hB.data(),
+                               strideB1,
+                               strideB2,
+                               hC.data(),
+                               1,
+                               ldc,
+                               hDGold.data(),
+                               1,
+                               ldd);
 
     double maxRelativeError = helpers::maxRelativeError(hD, hDGold);
-    double eps              = std::numeric_limits<double>::epsilon();
+    double eps              = std::numeric_limits<float>::epsilon();
     double tolerance        = 10;
     if(maxRelativeError > eps * tolerance)
     {
