@@ -25,9 +25,9 @@ THE SOFTWARE.
 #include "error_macros.h"
 #include "memoryHelpers.hpp"
 #include "timers.hpp"
-#include <hip/hip_complex.h>
 #include <complex>
 #include <cstdio>
+#include <hip/hip_complex.h>
 #include <iostream>
 #include <random>
 #include <rocblas.h>
@@ -100,7 +100,10 @@ namespace helpers
                     A[i + j * lda + iBatch * stride] = randomHPLGenerator<T>();
     }
 
-    template <typename T, std::enable_if_t<!std::is_same<T, std::complex<float> >{} && !std::is_same<T, hipFloatComplex>{}, int> = 0>
+    template <typename T,
+              std::enable_if_t<!std::is_same<T, std::complex<float>>{}
+                                   && !std::is_same<T, hipFloatComplex>{},
+                               int> = 0>
     void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
     {
         srand(int(time(NULL)));
@@ -116,7 +119,10 @@ namespace helpers
         }
     }
 
-    template <typename T, std::enable_if_t<std::is_same<T, std::complex<float> >{} || std::is_same<T, hipFloatComplex>{}, int> = 0>
+    template <typename T,
+              std::enable_if_t<std::is_same<T, std::complex<float>>{}
+                                   || std::is_same<T, hipFloatComplex>{},
+                               int> = 0>
     void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
     {
         srand(int(time(NULL)));
