@@ -196,7 +196,7 @@ int main(int argc, char** argv)
                                       ldc);
     }
 
-    dataType maxRelativeError = (dataType) helpers::maxRelativeError(hC, hGold);
+    dataType maxRelativeError = (dataType)helpers::maxRelativeError(hC, hGold);
     dataType eps              = std::numeric_limits<dataType>::epsilon();
     float    tolerance        = 10;
     if(maxRelativeError > eps * tolerance)

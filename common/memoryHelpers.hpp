@@ -71,7 +71,8 @@ namespace helpers
                     d += PAD;
 
                     // Copy mGuard to device memory after end of allocated memory
-                    CHECK_HIP_ERROR(hipMemcpy(d + mSize, mGuard, sizeof(mGuard), hipMemcpyHostToDevice));
+                    CHECK_HIP_ERROR(
+                        hipMemcpy(d + mSize, mGuard, sizeof(mGuard), hipMemcpyHostToDevice));
                 }
             }
             return d;
@@ -86,8 +87,8 @@ namespace helpers
                     U host[PAD];
 
                     // Copy device memory after allocated memory to host
-                    CHECK_HIP_ERROR(hipMemcpy(
-                        host, d + mSize, sizeof(mGuard), hipMemcpyDeviceToHost));
+                    CHECK_HIP_ERROR(
+                        hipMemcpy(host, d + mSize, sizeof(mGuard), hipMemcpyDeviceToHost));
 
                     // Make sure no corruption has occurred
                     assert(!memcmp(host, mGuard, sizeof(mGuard)));
@@ -133,10 +134,10 @@ namespace helpers
         {
             return mData;
         }
-         
-        T* data() const 
+
+        T* data() const
         {
-            return mData;              
+            return mData;
         }
 
         // Tell whether malloc failed

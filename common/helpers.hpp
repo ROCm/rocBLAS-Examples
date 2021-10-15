@@ -72,7 +72,7 @@ namespace helpers
         std::random_device          rd{};
         std::mt19937                gen{rd()};
         std::normal_distribution<T> distrib{T(0), T(1)};
-        (void) distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {
@@ -110,7 +110,7 @@ namespace helpers
         std::random_device                 rd{};
         std::mt19937                       gen{rd()};
         std::uniform_int_distribution<int> distrib{-range, range};
-        (void) distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {

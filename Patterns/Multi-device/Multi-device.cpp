@@ -330,7 +330,7 @@ int main(int argc, char** argv)
               << K << "," << lda << ", " << ldb << ", " << ldc << ", " << NUM_STREAMS << ", "
               << NUM_DEVICES << std::endl;
 
-    float max_error     = (float) helpers::maxError(h_C, h_Gold);
+    float max_error     = (float)helpers::maxError(h_C, h_Gold);
     float eps           = std::numeric_limits<float>::epsilon();
     float tolerance     = 10; // if tests fail try increasing tolerance
     float allowed_error = eps * tolerance * K * sqrtf((float)K); // allows for roundoff error

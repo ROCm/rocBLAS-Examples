@@ -144,7 +144,7 @@ int main(int argc, char** argv)
         hYGold[i] = hAlpha * 1.0f * hX[i] + hBeta * hYGold[i];
     }
 
-    dataType maxRelativeError = (dataType) helpers::maxRelativeError(hY, hYGold);
+    dataType maxRelativeError = (dataType)helpers::maxRelativeError(hY, hYGold);
     dataType eps              = std::numeric_limits<dataType>::epsilon();
     dataType tolerance        = 10;
     if(maxRelativeError > eps * tolerance)

@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 
-
 namespace helpers
 {
     struct ArgInfo
