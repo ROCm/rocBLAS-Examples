@@ -29,7 +29,9 @@ THE SOFTWARE.
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <vector>
+
 
 namespace helpers
 {

@@ -57,8 +57,8 @@ int main(int argc, char** argv)
     int32_t                    solutionIndex = 0;
     uint32_t                   flags         = 0;
 
-    int32_t hAlpha = options.alpha; // Same datatype as compute_type
-    int32_t hBeta  = options.beta; // Same datatype as compute_type
+    int32_t hAlpha = (int32_t) options.alpha; // Same datatype as compute_type
+    int32_t hBeta  = (int32_t) options.beta; // Same datatype as compute_type
 
     const rocblas_operation transA = rocblas_operation_none;
     const rocblas_operation transB = rocblas_operation_none;

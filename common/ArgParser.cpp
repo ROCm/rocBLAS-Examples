@@ -251,10 +251,10 @@ namespace helpers
                 n = atoi(argv[argIdx++]);
                 break;
             case 'a':
-                alpha = atof(argv[argIdx++]);
+                alpha = (float) atof(argv[argIdx++]);
                 break;
             case 'b':
-                beta = atof(argv[argIdx++]);
+                beta = (float) atof(argv[argIdx++]);
                 break;
             case 'c':
                 batchCount = atoi(argv[argIdx++]);

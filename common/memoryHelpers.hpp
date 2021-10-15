@@ -57,7 +57,7 @@ namespace helpers
             T* d;
             if((hipMalloc)(&d, mBytes) != hipSuccess)
             {
-                fprintf(stderr, "Error allocating %'zu mBytes (%zu GB)\n", mBytes, mBytes >> 30);
+                fprintf(stderr, "Error allocating %zu mBytes (%zu GB)\n", mBytes, mBytes >> 30);
                 d = nullptr;
             }
             else
@@ -65,13 +65,13 @@ namespace helpers
                 if(PAD > 0)
                 {
                     // Copy mGuard to device memory before start of allocated memory
-                    hipMemcpy(d, mGuard, sizeof(mGuard), hipMemcpyHostToDevice);
+                    CHECK_HIP_ERROR(hipMemcpy(d, mGuard, sizeof(mGuard), hipMemcpyHostToDevice));
 
                     // Point to allocated block
                     d += PAD;
 
                     // Copy mGuard to device memory after end of allocated memory
-                    hipMemcpy(d + mSize, mGuard, sizeof(mGuard), hipMemcpyHostToDevice);
+                    CHECK_HIP_ERROR(hipMemcpy(d + mSize, mGuard, sizeof(mGuard), hipMemcpyHostToDevice));
                 }
             }
             return d;
@@ -86,7 +86,8 @@ namespace helpers
                     U host[PAD];
 
                     // Copy device memory after allocated memory to host
-                    hipMemcpy(host, d + mSize, sizeof(mGuard), hipMemcpyDeviceToHost);
+                    CHECK_HIP_ERROR(hipMemcpy(
+                        host, d + mSize, sizeof(mGuard), hipMemcpyDeviceToHost));
 
                     // Make sure no corruption has occurred
                     assert(!memcmp(host, mGuard, sizeof(mGuard)));
@@ -95,7 +96,7 @@ namespace helpers
                     d -= PAD;
 
                     // Copy device memory after allocated memory to host
-                    hipMemcpy(host, d, sizeof(mGuard), hipMemcpyDeviceToHost);
+                    CHECK_HIP_ERROR(hipMemcpy(host, d, sizeof(mGuard), hipMemcpyDeviceToHost));
 
                     // Make sure no corruption has occurred
                     assert(!memcmp(host, mGuard, sizeof(mGuard)));
@@ -131,6 +132,11 @@ namespace helpers
         operator const T*() const
         {
             return mData;
+        }
+         
+        T* data() const 
+        {
+            return mData;              
         }
 
         // Tell whether malloc failed
@@ -178,6 +184,11 @@ namespace helpers
         }
 
         operator T**()
+        {
+            return mData;
+        }
+
+        T** data() const
         {
             return mData;
         }
