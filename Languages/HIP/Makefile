@@ -48,5 +48,7 @@ clean:
 	$(RM) $(EXE) $(OBJECTS)
 
 run:
-	AMD_LOG_LEVEL=2 ./$(EXE)
+	./${EXE}
+	# to log hip function calls
+	# AMD_LOG_LEVEL=3 ./$(EXE)
 
