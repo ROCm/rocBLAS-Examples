@@ -48,5 +48,5 @@ clean:
 	$(RM) $(EXE) $(OBJECTS)
 
 run:
-	AMD_LOG_LEVEL=3 ./$(EXE)
+	AMD_LOG_LEVEL=2 ./$(EXE)
 
