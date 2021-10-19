@@ -72,7 +72,7 @@ namespace helpers
         std::random_device          rd{};
         std::mt19937                gen{rd()};
         std::normal_distribution<T> distrib{T(0), T(1)};
-        distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {
@@ -110,12 +110,12 @@ namespace helpers
         std::random_device                 rd{};
         std::mt19937                       gen{rd()};
         std::uniform_int_distribution<int> distrib{-range, range};
-        distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {
             int rval = distrib(gen);
-            arr[i]   = T(rval);
+            arr[i]   = T((float)rval);
         }
     }
 
@@ -223,7 +223,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += A[i1 * As1 + i3 * As2] * B[i3 * Bs1 + i2 * Bs2];
@@ -256,7 +256,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);
@@ -289,7 +289,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);

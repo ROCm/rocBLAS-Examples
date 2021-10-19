@@ -185,15 +185,15 @@ int main(int argc, char** argv)
             rocblas_set_stream(handles[stream_Id], streams[stream_Id]);
 
             //'host_start_offset_A' points to the starting address of the host matrix 'A' from where the data needs to be transferred from the host to the device
-            int host_start_offset_A
+            size_t host_start_offset_A
                 = device_Id > 0 ? device_Id * NUM_STREAMS * M * K : stream_Id * M * K;
             host_start_offset_A = stream_Id > 0 && device_Id > 0 ? host_start_offset_A * stream_Id
                                                                  : host_start_offset_A;
 
             //'device_start_offset_A' points to the starting address of the device matrix 'A' from where the data needs to be transferred from the host to the device
-            int device_start_offset_A = stream_Id * M * K;
+            size_t device_start_offset_A = stream_Id * M * K;
 
-            herror = hipMemcpyAsync(d_A + device_start_offset_A,
+            herror = hipMemcpyAsync(d_A.data() + device_start_offset_A,
                                     h_A.data() + host_start_offset_A,
                                     sizeof(float) * stream_size_A,
                                     hipMemcpyHostToDevice,
@@ -201,14 +201,14 @@ int main(int argc, char** argv)
             CHECK_HIP_ERROR(herror);
 
             //'host_start_offset_B' points to the starting address of host matrix 'B' from where the data needs to be transferred from the host to the device
-            int host_start_offset_B
+            size_t host_start_offset_B
                 = device_Id > 0 ? device_Id * NUM_STREAMS * K * N : stream_Id * K * N;
             host_start_offset_B = stream_Id > 0 && device_Id > 0 ? host_start_offset_B * stream_Id
                                                                  : host_start_offset_B;
 
             //'device_start_offset_B' points to the starting address of the device matrix 'B' from where the data needs to be transferred from the host to the device
             int device_start_offset_B = stream_Id * K * N;
-            herror                    = hipMemcpyAsync(d_B + device_start_offset_B,
+            herror                    = hipMemcpyAsync(d_B.data() + device_start_offset_B,
                                     h_B.data() + host_start_offset_B,
                                     sizeof(float) * stream_size_B,
                                     hipMemcpyHostToDevice,
@@ -216,14 +216,14 @@ int main(int argc, char** argv)
             CHECK_HIP_ERROR(herror);
 
             //'host_start_offset_C' points to the starting address of host matrix 'C' from where the data needs to be transferred from the host to the device
-            int host_start_offset_C
+            size_t host_start_offset_C
                 = device_Id > 0 ? device_Id * NUM_STREAMS * M * N : stream_Id * M * N;
             host_start_offset_C = stream_Id > 0 && device_Id > 0 ? host_start_offset_C * stream_Id
                                                                  : host_start_offset_C;
 
             //'device_start_offset_C' points to the starting address of the device matrix 'C' from where the data needs to be transferred from the host to the device
             int device_start_offset_C = stream_Id * M * N;
-            herror                    = hipMemcpyAsync(d_C + device_start_offset_C,
+            herror                    = hipMemcpyAsync(d_C.data() + device_start_offset_C,
                                     h_C.data() + host_start_offset_C,
                                     sizeof(float) * stream_size_C,
                                     hipMemcpyHostToDevice,
@@ -242,12 +242,12 @@ int main(int argc, char** argv)
                                     N,
                                     K,
                                     &h_Alpha,
-                                    d_A + device_start_offset_A,
+                                    d_A.data() + device_start_offset_A,
                                     lda,
-                                    d_B + device_start_offset_B,
+                                    d_B.data() + device_start_offset_B,
                                     ldb,
                                     &h_Beta,
-                                    d_C + device_start_offset_C,
+                                    d_C.data() + device_start_offset_C,
                                     ldc);
 
             //Check that calculation was launched correctly on device, not that result was computed yet
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
 
             //Fetch device memory results
             herror = hipMemcpyAsync(h_C.data() + host_start_offset_C,
-                                    d_C + device_start_offset_C,
+                                    d_C.data() + device_start_offset_C,
                                     sizeof(float) * stream_size_C,
                                     hipMemcpyDeviceToHost,
                                     streams[stream_Id]);
@@ -330,10 +330,10 @@ int main(int argc, char** argv)
               << K << "," << lda << ", " << ldb << ", " << ldc << ", " << NUM_STREAMS << ", "
               << NUM_DEVICES << std::endl;
 
-    float max_error     = helpers::maxError(h_C, h_Gold);
+    float max_error     = (float)helpers::maxError(h_C, h_Gold);
     float eps           = std::numeric_limits<float>::epsilon();
     float tolerance     = 10; // if tests fail try increasing tolerance
-    float allowed_error = eps * tolerance * K * sqrt(K); // allows for roundoff error
+    float allowed_error = eps * tolerance * K * sqrtf((float)K); // allows for roundoff error
 
     if(max_error > allowed_error)
     {

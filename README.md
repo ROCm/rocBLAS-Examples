@@ -42,5 +42,5 @@ Level-1/swap is the simplest example and is a good starting point to read over t
 Note when compiling with gcc we are defining both the newer <tt>-D__HIP_PLATFORM_AMD__</tt> and the deprecated <tt>-D__HIP_PLATFORM_HCC__</tt> to allow building against various rocm releases.
 
 ## Contributing
-Additional examples should be added in the Applications directory.  The directory name should indicate the application domain and examples must contain a README.md file.   Additional examples may use the common code but should not modify it.  
+Additional examples should be added in the Applications directory. The directory name should indicate the application domain and examples must contain a README.md file.   Additional examples may use the common code but should not modify it.  
 
