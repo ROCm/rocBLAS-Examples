@@ -187,7 +187,7 @@ def msvc_cmd():
 
     nproc = OS_info["NUM_PROC"]
     if os.name == "nt":
-        make_executable = f"devenv /Build Release rocblas-examples.sln" 
+        make_executable = f"msbuild rocblas-examples.sln -property:Configuration=Release" 
         if args.verbose:
           make_options.append( "--verbose" )
     else:

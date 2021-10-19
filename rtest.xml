@@ -12,7 +12,7 @@
   <run name="L1 swap">{%IDIR%}/../msvc/Release/swap</run>
   <run name="L2 gemv">{%IDIR%}/../msvc/Release/gemv</run>
   <run name="L3 gemm">{%IDIR%}/../msvc/Release/gemm</run>
-  <run name="L3 gemm_strided_batched">{%IDIR%}/../msvc/Release/gemm_strided_batced</run>  
+  <run name="L3 gemm_strided_batched">{%IDIR%}/../msvc/Release/gemm_strided_batched</run>  
   <run name="Multi-device">{%IDIR%}/../msvc/Release/Multi-device</run>  
   <run name="Multi-stream">{%IDIR%}/../msvc/Release/Multi-stream</run>  
 </test>
