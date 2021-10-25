@@ -1,4 +1,4 @@
-# Copyright 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright 2021 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -16,23 +16,18 @@ ifeq (,$(ROCBLAS_PATH))
 endif
 
 EXE = $(shell basename $(CURDIR))
-COMMON_PATH = ../../common
-SOURCES = $(wildcard *.cpp) $(wildcard $(COMMON_PATH)/*.cpp)
+SOURCES = $(wildcard *.cpp) 
 OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES))
 
-CXX=g++
-# uncomment to use hip compiler
-CXX=$(HIPCXX)
-OPT = -g -Wall 
-# removing these temporarily as hipcc can not process
-# -Ofast -march=native 
-INC = -I$(COMMON_PATH) -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include
+CXX=$(HIPCXX) # needed for hip kernel compilation
+OPT = -ggdb -O0 -march=native -Wall
+INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
-	CXXFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
+	CCFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__ 
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lc
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -L$(HIP_PATH)/lib -lamdhip64 -Wl,-rpath=$(HIP_PATH)/lib
 endif
@@ -43,7 +38,7 @@ RM = rm -f
 
 all: $(EXE)
 
-%.o: %.cpp
+%.o: %.cpp # all are using hip
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(EXE): $(OBJECTS)
@@ -53,5 +48,7 @@ clean:
 	$(RM) $(EXE) $(OBJECTS)
 
 run:
-	./$(EXE)
+	./${EXE}
+	# to log hip function calls
+	# AMD_LOG_LEVEL=3 ./$(EXE)
 

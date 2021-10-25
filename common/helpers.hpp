@@ -25,7 +25,9 @@ THE SOFTWARE.
 #include "error_macros.h"
 #include "memoryHelpers.hpp"
 #include "timers.hpp"
+#include <complex>
 #include <cstdio>
+#include <hip/hip_complex.h>
 #include <iostream>
 #include <random>
 #include <rocblas.h>
@@ -70,7 +72,7 @@ namespace helpers
         std::random_device          rd{};
         std::mt19937                gen{rd()};
         std::normal_distribution<T> distrib{T(0), T(1)};
-        distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {
@@ -98,7 +100,29 @@ namespace helpers
                     A[i + j * lda + iBatch * stride] = randomHPLGenerator<T>();
     }
 
-    template <typename T>
+    template <typename T,
+              std::enable_if_t<!std::is_same<T, std::complex<float>>{}
+                                   && !std::is_same<T, hipFloatComplex>{},
+                               int> = 0>
+    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
+    {
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_int_distribution<int> distrib{-range, range};
+        (void)distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i += inc)
+        {
+            int rval = distrib(gen);
+            arr[i]   = T((float)rval);
+        }
+    }
+
+    template <typename T,
+              std::enable_if_t<std::is_same<T, std::complex<float>>{}
+                                   || std::is_same<T, hipFloatComplex>{},
+                               int> = 0>
     void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
     {
         srand(int(time(NULL)));
@@ -110,7 +134,8 @@ namespace helpers
         for(size_t i = 0; i < arr.size(); i += inc)
         {
             int rval = distrib(gen);
-            arr[i]   = T(rval);
+            int ival = distrib(gen);
+            arr[i]   = T(rval, ival);
         }
     }
 
@@ -165,11 +190,11 @@ namespace helpers
                     float relativeError = std::numeric_limits<T>::min();
                     if(gold != 0)
                     {
-                        float relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
+                        relativeError = (gold - A[i + j * lda + iBatch * stride]) / gold;
                     }
                     else
                     {
-                        float relativeError = A[i + j * lda + iBatch * stride];
+                        relativeError = A[i + j * lda + iBatch * stride];
                     }
                     relativeError = relativeError > 0 ? relativeError : -relativeError;
                     maxRelativeError
@@ -198,7 +223,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += A[i1 * As1 + i3 * As2] * B[i3 * Bs1 + i2 * Bs2];
@@ -231,7 +256,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);
@@ -264,7 +289,7 @@ namespace helpers
         {
             for(int i2 = 0; i2 < N; i2++)
             {
-                T t = 0.0;
+                T t = T(0.0);
                 for(int i3 = 0; i3 < K; i3++)
                 {
                     t += T(A[i1 * As1 + i3 * As2]) * T(B[i3 * Bs1 + i2 * Bs2]);
@@ -282,6 +307,18 @@ namespace helpers
             for(int j = 0; j < N; j++)
             {
                 A[i + j * lda] = T(i == j);
+            }
+        }
+    }
+
+    template <>
+    void matIdentity(hipFloatComplex* A, int M, int N, size_t lda)
+    {
+        for(int i = 0; i < M; i++)
+        {
+            for(int j = 0; j < N; j++)
+            {
+                A[i + j * lda] = hipFloatComplex(i == j, 0);
             }
         }
     }

@@ -24,7 +24,7 @@ OPT = -ggdb -O0 -march=native -Wall -Wno-c-binding-type
 INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 FFLAGS = $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
-	FFLAGS += -D__HIP_PLATFORM_HCC__
+	FFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
 LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread

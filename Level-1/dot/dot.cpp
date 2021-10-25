@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         CHECK_ROCBLAS_STATUS(rstatus);
 
         //Block until result is ready
-        hipDeviceSynchronize();
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
 
     } // release device memory via helpers::DeviceVector destructors
 

@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 
     /*Helper function to check the Relative error between output generated 
     from rocBLAS API saxpy and the CPU function*/
-    float maxRelativeError = helpers::maxRelativeError(hY, hYGold);
+    float maxRelativeError = (float)helpers::maxRelativeError(hY, hYGold);
     float eps              = std::numeric_limits<float>::epsilon();
     float tolerance        = 10;
 
