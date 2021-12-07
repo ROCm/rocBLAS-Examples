@@ -105,6 +105,13 @@ else()
         foreach( file_i ${test_harness})
             add_custom_command( TARGET ${last_target} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy ${file_i} ${PROJECT_BINARY_DIR} )
         endforeach( file_i )
+        # copy msvc build executables into PROJECT_BINARY_DIR
+        if (CMAKE_BUILD_TYPE MATCHES "Debug")
+            set(msvc_subdir "Debug")
+        else()
+            set(msvc_subdir "Release")
+        endif()
+        add_custom_command( TARGET ${last_target} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_directory  ${PROJECT_BINARY_DIR}/../msvc/${msvc_subdir} ${PROJECT_BINARY_DIR} )
     endif()
 
 endif()

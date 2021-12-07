@@ -5,15 +5,15 @@
   <run name="L2 gemm bf16">gemm_ex_f16_r</run>
   <run name="L2 her">her</run>
   <!-- visual studio results -->
-  <run name="L1 axpy">{%IDIR%}/../msvc/Release/axpy</run>
-  <run name="L1 dot">{%IDIR%}/../msvc/Release/dot</run>
-  <run name="L1 nrm2">{%IDIR%}/../msvc/Release/nrm2</run>
-  <run name="L1 scal">{%IDIR%}/../msvc/Release/scal</run>
-  <run name="L1 swap">{%IDIR%}/../msvc/Release/swap</run>
-  <run name="L2 gemv">{%IDIR%}/../msvc/Release/gemv</run>
-  <run name="L3 gemm">{%IDIR%}/../msvc/Release/gemm</run>
-  <run name="L3 gemm_strided_batched">{%IDIR%}/../msvc/Release/gemm_strided_batched</run>  
-  <run name="Multi-device">{%IDIR%}/../msvc/Release/Multi-device</run>  
-  <run name="Multi-stream">{%IDIR%}/../msvc/Release/Multi-stream</run>  
+  <run name="L1 axpy">axpy</run>
+  <run name="L1 dot">dot</run>
+  <run name="L1 nrm2">nrm2</run>
+  <run name="L1 scal">scal</run>
+  <run name="L1 swap">swap</run>
+  <run name="L2 gemv">gemv</run>
+  <run name="L3 gemm">gemm</run>
+  <run name="L3 gemm_strided_batched">gemm_strided_batched</run>  
+  <run name="Multi-device">Multi-device</run>  
+  <run name="Multi-stream">Multi-stream</run>  
 </test>
 </testset>
