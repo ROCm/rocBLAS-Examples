@@ -27,7 +27,9 @@ THE SOFTWARE.
 #include "timers.hpp"
 #include <complex>
 #include <cstdio>
+#if !defined(_WIN32) || defined(__HIPCC__)
 #include <hip/hip_complex.h>
+#endif
 #include <iostream>
 #include <random>
 #include <rocblas.h>
@@ -100,6 +102,7 @@ namespace helpers
                     A[i + j * lda + iBatch * stride] = randomHPLGenerator<T>();
     }
 
+#if !defined(_WIN32) || defined(__HIPCC__)
     template <typename T,
               std::enable_if_t<!std::is_same<T, std::complex<float>>{}
                                    && !std::is_same<T, hipFloatComplex>{},
@@ -129,15 +132,32 @@ namespace helpers
         std::random_device                 rd{};
         std::mt19937                       gen{rd()};
         std::uniform_int_distribution<int> distrib{-range, range};
-        distrib(gen); // prime generator to remove warning
+        (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
         {
             int rval = distrib(gen);
             int ival = distrib(gen);
-            arr[i]   = T(rval, ival);
+            arr[i]   = T((float)rval, (float)ival);
         }
     }
+#else
+    template <typename T>
+    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
+    {
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_int_distribution<int> distrib{-range, range};
+        (void)distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i += inc)
+        {
+            int rval = distrib(gen);
+            arr[i]   = T((float)rval);
+        }
+    }
+#endif
 
     template <typename T>
     double maxError(std::vector<T>& A, std::vector<T>& reference)
@@ -311,6 +331,7 @@ namespace helpers
         }
     }
 
+#if !defined(_WIN32) || defined(__HIPCC__)
     template <>
     void matIdentity(hipFloatComplex* A, int M, int N, size_t lda)
     {
@@ -322,5 +343,6 @@ namespace helpers
             }
         }
     }
+#endif
 
 } // namespace helpers
