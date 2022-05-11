@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <map>
 #include <math.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
@@ -76,7 +76,7 @@ namespace helpers
             return eOk;
         }
 
-        /*! * @brief validArgs parses the command line options 
+        /*! * @brief validArgs parses the command line options
             * @param argc number of elements in cmd line input
             * @param argv array of char* storing the CmdLine Options
             * @return true if all specified arguments are valid
@@ -92,7 +92,7 @@ namespace helpers
         char** mArgv;
     };
 
-    /*! \brief class for rocblas examples command line parsing of common parameters 
+    /*! \brief class for rocblas examples command line parsing of common parameters
     *******************************************************************************/
     class ArgParser : public ArgParserBase
     {
