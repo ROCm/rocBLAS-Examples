@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <hip/hip_runtime.h>
-#include <rocblas.h>
+#include "error_macros.h"
 #include <assert.h>
+#include <hip/hip_runtime.h>
 #include <math.h>
+#include <rocblas/rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "error_macros.h"
-
 
 int main(int argc, char** argv)
 {
@@ -35,12 +34,12 @@ int main(int argc, char** argv)
     size_t rows, cols;
 
     int n = 267;
-    if (argc > 1) n = atoi(argv[1]);
+    if(argc > 1)
+        n = atoi(argv[1]);
 
     rows = n;
-    cols = 2*n;
+    cols = 2 * n;
     lda = ldb = lddev = n;
-
 
     typedef double data_type;
 
@@ -49,15 +48,17 @@ int main(int argc, char** argv)
     CHECK_ROCBLAS_STATUS(rstatus);
 
     hipStream_t test_stream;
-    rstatus = rocblas_get_stream( handle, &test_stream );
+    rstatus = rocblas_get_stream(handle, &test_stream);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     data_type* ha;
     data_type* hb;
 
     // allocate pinned memory to allow async memory transfer
-    CHECK_HIP_ERROR(hipHostMalloc((void**)&ha, lda * cols * sizeof(data_type), hipHostMallocMapped));
-    CHECK_HIP_ERROR(hipHostMalloc((void**)&hb, ldb * cols * sizeof(data_type), hipHostMallocMapped));
+    CHECK_HIP_ERROR(
+        hipHostMalloc((void**)&ha, lda * cols * sizeof(data_type), hipHostMallocMapped));
+    CHECK_HIP_ERROR(
+        hipHostMalloc((void**)&hb, ldb * cols * sizeof(data_type), hipHostMallocMapped));
 
     for(int i1 = 0; i1 < rows; i1++)
         for(int i2 = 0; i2 < cols; i2++)
@@ -67,26 +68,41 @@ int main(int argc, char** argv)
     data_type* db = 0;
     data_type* dc = 0;
     CHECK_HIP_ERROR(hipMalloc((void**)&da, lddev * cols * sizeof(data_type)));
-    CHECK_HIP_ERROR(hipMalloc((void**)&db, lddev * cols * sizeof(data_type))); 
+    CHECK_HIP_ERROR(hipMalloc((void**)&db, lddev * cols * sizeof(data_type)));
     CHECK_HIP_ERROR(hipMalloc((void**)&dc, lddev * cols * sizeof(data_type)));
 
     // upload asynchronously from pinned memory
-    rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, da, lddev, test_stream);
-    rstatus = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, db, lddev, test_stream);
+    rstatus
+        = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, da, lddev, test_stream);
+    rstatus
+        = rocblas_set_matrix_async(rows, cols, sizeof(data_type), ha, lda, db, lddev, test_stream);
 
     // scalar arguments will be from host memory
     rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     data_type alpha = 1.0;
-    data_type beta = 2.0;
+    data_type beta  = 2.0;
 
     // invoke asynchronous computation
-    rstatus = rocblas_dgeam(handle, rocblas_operation_none, rocblas_operation_none, rows, cols, &alpha, da, lddev, &beta, db, lddev, dc, lddev);
+    rstatus = rocblas_dgeam(handle,
+                            rocblas_operation_none,
+                            rocblas_operation_none,
+                            rows,
+                            cols,
+                            &alpha,
+                            da,
+                            lddev,
+                            &beta,
+                            db,
+                            lddev,
+                            dc,
+                            lddev);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     // fetch results asynchronously to pinned memory
-    rstatus = rocblas_get_matrix_async(rows, cols, sizeof(data_type), dc, lddev, hb, ldb, test_stream);
+    rstatus
+        = rocblas_get_matrix_async(rows, cols, sizeof(data_type), dc, lddev, hb, ldb, test_stream);
     CHECK_ROCBLAS_STATUS(rstatus);
 
     // wait on transfer to be finished
@@ -96,7 +112,7 @@ int main(int argc, char** argv)
     bool fail = false;
     for(int i1 = 0; i1 < rows; i1++)
         for(int i2 = 0; i2 < cols; i2++)
-            if (hb[i1 + i2 * ldb] != 3.0*ha[i1 + i2 * lda])
+            if(hb[i1 + i2 * ldb] != 3.0 * ha[i1 + i2 * lda])
                 fail = true;
 
     CHECK_HIP_ERROR(hipFree(da));

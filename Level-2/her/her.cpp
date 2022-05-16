@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <hip/hip_complex.h>
 #include <hip/hip_runtime.h>
 #include <math.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

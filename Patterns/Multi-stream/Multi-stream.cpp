@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <math.h>
 #include <omp.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
     std::cout << "Input host Vector (Y)" << std::endl;
     //helpers::printVector(h_Y);
 
-    /*Initialising the values for vector 'h_Y_Gold', this vector will be used as a Gold Standard  
+    /*Initialising the values for vector 'h_Y_Gold', this vector will be used as a Gold Standard
     to compare our results from rocBLAS SYMV funtion*/
     std::vector<float> h_Y_Gold(h_Y);
     h_Y_Gold = h_Y;

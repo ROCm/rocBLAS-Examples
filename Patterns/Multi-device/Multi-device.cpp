@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <math.h>
 #include <omp.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
     device_size_C = N * ldc * NUM_STREAMS;
     stream_size_C = N * ldc;
 
-    /*Allocating memory for the host input matrices 'A', 'B' and 'C'. 'h_Gold' matrix will be used as a Gold Standard  
+    /*Allocating memory for the host input matrices 'A', 'B' and 'C'. 'h_Gold' matrix will be used as a Gold Standard
     to compare our results from rocBLAS GEMM funtion*/
     std::vector<float> h_A(size_A);
     std::vector<float> h_B(size_B);
