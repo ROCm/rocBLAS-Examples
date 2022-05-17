@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include "helpers.hpp"
 #include <hip/hip_runtime.h>
 #include <math.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     std::cout << "Input Vectors (Y)" << std::endl;
     helpers::printVector(hY);
 
-    /*Initialising the values for vector hYGold, this vector will be used as a Gold Standard  
+    /*Initialising the values for vector hYGold, this vector will be used as a Gold Standard
     to compare our results from rocBLAS SAXPY funtion*/
     std::vector<float> hYGold(hY);
 
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
         CHECK_ROCBLAS_STATUS(rstatus);
 
-        /*Transfer the result from device vector Y to host vector Y, 
+        /*Transfer the result from device vector Y to host vector Y,
         automatically blocked until results ready*/
         herror = hipMemcpy(hY.data(), dY, sizeof(float) * sizeY, hipMemcpyDeviceToHost);
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
     std::cout << "Output Vector YGold" << std::endl;
     helpers::printVector(hYGold);
 
-    /*Helper function to check the Relative error between output generated 
+    /*Helper function to check the Relative error between output generated
     from rocBLAS API saxpy and the CPU function*/
     float maxRelativeError = (float)helpers::maxRelativeError(hY, hYGold);
     float eps              = std::numeric_limits<float>::epsilon();
