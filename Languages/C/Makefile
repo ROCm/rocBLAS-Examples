@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -23,15 +23,15 @@ CC=gcc
 # uncomment to use hip compiler
 #CC=$(HIPCXX)
 OPT = -ggdb -O0 -march=native -Wall
-INC = -isystem$(HIP_PATH)/include -I$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
+INC = -isystem$(ROCM_PATH)/include -I../../common
 CCFLAGS = -std=c11 $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
 	CCFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lm -lpthread -lc
+LDFLAGS=-L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lc
 ifneq ($(CXX),$(HIPCXX))
-	LDFLAGS += -L$(HIP_PATH)/lib -lamdhip64 -Wl,-rpath=$(HIP_PATH)/lib
+	LDFLAGS += -lamdhip64
 endif
 
 RM = rm -f
