@@ -1,8 +1,8 @@
 # rocBLAS-Examples
-Examples for using rocBLAS (Radeon Open Compute Basic Linear Algebra Subprograms) which is a GPU exploiting implementation of BLAS.
+Examples for using rocBLAS which is a GPU exploiting implementation of BLAS.
 
 # rocBLAS
-rocBLAS is AMD's library for [BLAS](http://www.netlib.org/blas/) on [ROCm<sup>TM</sup>](https://rocm.github.io/install.html).
+rocBLAS is AMD's library for BLAS on [ROCm<sup>TM</sup>](https://rocmdocs.amd.com/en/latest/).
 It is implemented in the [HIP](https://github.com/ROCm-Developer-Tools/HIP)
 programming language and optimized for AMD's GPUs.
 
