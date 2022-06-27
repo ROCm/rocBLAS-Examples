@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 #include "helpers.hpp"
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 #include <math.h>
 #include <rocblas/rocblas.h>
 #include <stdio.h>
