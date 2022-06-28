@@ -1,6 +1,23 @@
 #!/usr/bin/python3
-"""Copyright 2021 Advanced Micro Devices, Inc.
-Run tests on build"""
+"""Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell cop-
+   ies of the Software, and to permit persons to whom the Software is furnished
+   to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IM-
+   PLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNE-
+   CTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
 
 import re
 import os
@@ -30,13 +47,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description="""
     Checks build arguments
     """)
-    parser.add_argument('-t', '--test', required=True, 
+    parser.add_argument('-t', '--test', required=True,
                         help='Test set to run from rtest.xml (required, e.g. osdb)')
     parser.add_argument('-g', '--debug', required=False, default=False,  action='store_true',
                         help='Test Debug build (optional, default: false)')
-    parser.add_argument('-o', '--output', type=str, required=False, default="xml", 
+    parser.add_argument('-o', '--output', type=str, required=False, default="xml",
                         help='Test output file (optional, default: test_detail.xml)')
-    parser.add_argument(      '--install_dir', type=str, required=False, default="build", 
+    parser.add_argument(      '--install_dir', type=str, required=False, default="build",
                         help='Installation directory where build or release folders are (optional, default: build)')
     parser.add_argument(      '--fail_test', default=False, required=False, action='store_true',
                         help='Return as if test failed (optional, default: false)')
@@ -125,14 +142,14 @@ class TimerProcess(multiprocessing.Process):
                     cmd = ['TASKKILL', '/F', '/T', '/PID', str(self.kill_pid)]
                     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
                 else:
-                    os.kill(self.kill_pid, signal.SIGKILL)  
+                    os.kill(self.kill_pid, signal.SIGKILL)
                 self.timed_out.set()
                 self.stop()
             pass
 
     def stop(self):
         self.quit.set()
-    
+
     def stopped(self):
         return self.timed_out.is_set()
 
@@ -168,7 +185,7 @@ def run_cmd(cmd, test = False, time_limit = 0):
     try:
         if not test:
             proc = subprocess.run(cmdline, check=True, stderr=subprocess.STDOUT, shell=True)
-            status = proc.returncode    
+            status = proc.returncode
         else:
             error = False
             timeout = False
@@ -192,12 +209,12 @@ def run_cmd(cmd, test = False, time_limit = 0):
                 p.join()
                 timeout = p.stopped()
                 print(f"timeout {timeout}")
-            if error: 
+            if error:
                 status = 1
             elif timeout:
                 status = 2
             else:
-                status = test_proc.returncode    
+                status = test_proc.returncode
     except:
         import traceback
         exc = traceback.format_exc()
@@ -208,14 +225,14 @@ def run_cmd(cmd, test = False, time_limit = 0):
 def batch(script, xml):
     global OS_info
     global args
-    # 
+    #
     cwd = pathlib.os.curdir
     if args.debug: build_type = "debug"
     else: build_type = "release"
     rtest_cwd_path = os.path.abspath( os.path.join( cwd, 'rtest.xml') )
     if os.path.isfile(rtest_cwd_path) and (os.path.dirname(rtest_cwd_path).endswith( f"{build_type}" ) or os.path.dirname(rtest_cwd_path).endswith( "staging" )):
         # if in a build directory then test locally
-        test_dir = cwd 
+        test_dir = cwd
     else:
         test_dir = f"{args.install_dir}//{build_type}//clients//staging"
     fail = False
@@ -295,7 +312,7 @@ def run_tests():
             #print("Failure in script. ABORTING")
             if (os.curdir != cwd):
                 os.chdir( cwd )
-            return 1       
+            return 1
     if (os.curdir != cwd):
         os.chdir( cwd )
     return 0
