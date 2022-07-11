@@ -41,13 +41,13 @@ OBJECTS = $(patsubst %.f90, %.o, $(SOURCES))
 
 CC=gfortran
 OPT = -ggdb -O0 -march=native -Wall -Wno-c-binding-type
-INC = -isystem$(ROCM_PATH)/include -I../../common
+INC = -isystem$(ROCM_PATH)/include -isystem$(ROCBLAS_PATH)/include -I../../common
 FFLAGS = $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
 	FFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread
+LDFLAGS=-L$(ROCM_PATH)/lib -L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -Wl,-rpath=$(ROCBLAS_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif

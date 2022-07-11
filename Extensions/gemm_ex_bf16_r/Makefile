@@ -46,13 +46,13 @@ CXX=$(HIPCXX)
 OPT = -g -Wall 
 # removing these temporarily as hipcc can not process
 # -Ofast -march=native 
-INC = -I$(COMMON_PATH) -isystem$(ROCM_PATH)/include
+INC = -I$(COMMON_PATH) -isystem$(ROCM_PATH)/include -isystem$(ROCBLAS_PATH)/include
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCM_PATH)/lib -L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -Wl,-rpath=$(ROCBLAS_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif
