@@ -12,7 +12,7 @@ endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
 ifeq (,$(ROCBLAS_PATH))
-        ROCBLAS_PATH= $(wildcard /opt/rocm/rocblas)
+        ROCBLAS_PATH= $(wildcard /opt/rocm/include)
 endif
 
 EXE = $(shell basename $(CURDIR))
@@ -21,13 +21,13 @@ OBJECTS = $(patsubst %.cpp, %.o, $(SOURCES))
 
 CXX=$(HIPCXX) # needed for hip kernel compilation
 OPT = -ggdb -O0 -march=native -Wall
-INC = -isystem$(ROCM_PATH)/include -isystem$(ROCBLAS_PATH)/include -I../../common
+INC = -isystem$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
 	CCFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__ 
 endif
 
-LDFLAGS=-L$(ROCM_PATH)/lib -L$(ROCBLAS_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -Wl,-rpath=$(ROCBLAS_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif
