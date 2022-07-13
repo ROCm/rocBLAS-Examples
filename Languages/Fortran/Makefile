@@ -61,7 +61,7 @@ all: $(EXE)
 %.o: %.f90
 	$(CC) $(FFLAGS) -c $< -o $@
 
-rocblas.mod: $(ROCBLAS_PATH)/include/rocblas_module.f90
+rocblas.mod: $(ROCBLAS_PATH)/rocblas/rocblas_module.f90
 	$(CC) $(FFLAGS) -c $<
 
 $(EXE): rocblas.mod $(OBJECTS)
