@@ -47,7 +47,7 @@ ifneq ($(CC),$(HIPCXX))
 	FFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif
