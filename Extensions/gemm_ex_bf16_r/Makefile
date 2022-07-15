@@ -1,4 +1,24 @@
+# ########################################################################
 # Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell cop-
+# ies of the Software, and to permit persons to whom the Software is furnished
+# to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IM-
+# PLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNE-
+# CTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# ########################################################################
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -12,7 +32,7 @@ endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
 ifeq (,$(ROCBLAS_PATH))
-        ROCBLAS_PATH= $(wildcard /opt/rocm/rocblas)
+        ROCBLAS_PATH= $(wildcard /opt/rocm/include)
 endif
 
 EXE = $(shell basename $(CURDIR))
@@ -26,13 +46,13 @@ CXX=$(HIPCXX)
 OPT = -g -Wall 
 # removing these temporarily as hipcc can not process
 # -Ofast -march=native 
-INC = -I$(COMMON_PATH) -isystem$(ROCM_PATH)/include
+INC = -I$(COMMON_PATH) -isystem$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include 
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
 endif
 
-LDFLAGS=-L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif
