@@ -97,6 +97,9 @@ if (NOT CMAKE_CXX_COMPILER MATCHES ".*hipcc.*")
             target_compile_options( ${target_i} PRIVATE /Zc:__cplusplus )
             # we use hip types so setting these
             #target_compile_definitions( ${target_name} PRIVATE __HIP_PLATFORM_AMD__ __HIP_PLATFORM_HCC__ )
+
+            # bypass deprecations as incompatible with visual studio
+            target_compile_definitions( ${target_name} PRIVATE ROCBLAS_NO_DEPRECATED_WARNINGS )
         endif()
     endforeach( target_i )
 
