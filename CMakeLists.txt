@@ -95,11 +95,9 @@ if (NOT CMAKE_CXX_COMPILER MATCHES ".*hipcc.*")
         if (WIN32)
             # required for Visual Studio or it defines it as 199711L regardless of C++ standard
             target_compile_options( ${target_i} PRIVATE /Zc:__cplusplus )
+
             # we use hip types so setting these
             #target_compile_definitions( ${target_i} PRIVATE __HIP_PLATFORM_AMD__ __HIP_PLATFORM_HCC__ )
-
-            # bypass deprecations as incompatible with visual studio
-            target_compile_definitions( ${target_i} PRIVATE ROCBLAS_NO_DEPRECATED_WARNINGS )
         endif()
     endforeach( target_i )
 
