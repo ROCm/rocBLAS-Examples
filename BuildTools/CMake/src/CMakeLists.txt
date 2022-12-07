@@ -27,7 +27,8 @@ add_executable( example-cmake main.cpp )
 target_include_directories( example-cmake PRIVATE ../../../common )
 
 if (MSVC)
-    target_compile_definitions( example-cmake PRIVATE ROCBLAS_NO_DEPRECATED_WARNINGS )
+    # required for Visual Studio or it defines it as 199711L regardless of C++ standard
+    target_compile_options( example-cmake PRIVATE /Zc:__cplusplus )
 endif()
 
 target_link_libraries( example-cmake PRIVATE roc::rocblas )
