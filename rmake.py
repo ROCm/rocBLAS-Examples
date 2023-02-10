@@ -1,6 +1,23 @@
 #!/usr/bin/python3
-"""Copyright 2020-2021 Advanced Micro Devices, Inc.
-Manage build and installation"""
+"""Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell cop-
+   ies of the Software, and to permit persons to whom the Software is furnished
+   to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IM-
+   PLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNE-
+   CTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
 
 import re
 import sys
@@ -30,7 +47,7 @@ def parse_args():
     parser.add_argument('-v', '--verbose', required=False, default = False, action='store_true',
                         help='Verbose build (optional, default: False)')
     # rocblas-Examples
-    parser.add_argument(     '--library_path', type=str, required=False, default = "", 
+    parser.add_argument(     '--library_path', type=str, required=False, default = "",
                         help='If non-standard path to the pre-built rocBLAS library (optional, default: C:\hipSDK)')
     return parser.parse_args()
 
@@ -71,7 +88,7 @@ def cmake_path(os_path):
         return os_path.replace("\\", "/")
     else:
         return os_path
-    
+
 def config_cmd(src_path, use_hipcc):
     global args
     global OS_info
@@ -111,11 +128,11 @@ def config_cmd(src_path, use_hipcc):
         prefix_path = sdk_path
 
     if prefix_path:
-        cmake_base_options = f"-DCMAKE_PREFIX_PATH:PATH={prefix_path}" 
+        cmake_base_options = f"-DCMAKE_PREFIX_PATH:PATH={prefix_path}"
         cmake_options.append( cmake_base_options )
 
     # packaging options
-    # cmake_pack_options = f"-DCPACK_SET_DESTDIR=OFF" 
+    # cmake_pack_options = f"-DCPACK_SET_DESTDIR=OFF"
     # cmake_options.append( cmake_pack_options )
 
     if os.getenv('CMAKE_CXX_COMPILER_LAUNCHER'):
@@ -135,7 +152,7 @@ def config_cmd(src_path, use_hipcc):
             build_path = os.path.join(build_dir, "debug")
             cmake_config="Debug"
 
-        cmake_options.append( f"-DCMAKE_BUILD_TYPE={cmake_config}" ) 
+        cmake_options.append( f"-DCMAKE_BUILD_TYPE={cmake_config}" )
     else:
         build_path = os.path.join(build_dir, "msvc")
 
@@ -187,7 +204,7 @@ def msvc_cmd():
 
     nproc = OS_info["NUM_PROC"]
     if os.name == "nt":
-        make_executable = f"msbuild rocblas-examples.sln -property:Configuration=Release" 
+        make_executable = f"msbuild rocblas-examples.sln -property:Configuration=Release"
         if args.verbose:
           make_options.append( "--verbose" )
     else:
@@ -231,7 +248,7 @@ def main():
     exe, opts = config_cmd(src_path, True)
     run_cmd(exe, opts)
 
-    # make 
+    # make
     exe, opts = make_cmd()
     run_cmd(exe, opts)
 
