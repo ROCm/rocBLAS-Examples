@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     constexpr rocblas_datatype computeType   = rocblas_datatype_i32_r;
     rocblas_gemm_algo          algo          = rocblas_gemm_algo_standard;
     int32_t                    solutionIndex = 0;
-    uint32_t                   flags         = 0;
+    uint32_t                   flags         = rocblas_gemm_flags_none;
 
     int32_t hAlpha = (int32_t)options.alpha; // Same datatype as compute_type
     int32_t hBeta  = (int32_t)options.beta; // Same datatype as compute_type
@@ -104,15 +104,9 @@ int main(int argc, char** argv)
     rstatus = rocblas_create_handle(&handle);
     CHECK_ROCBLAS_STATUS(rstatus);
 
-    // ROCm 4.2: query the preferable int8 layout to see if we need to pack to int8x4 or not
-    rocblas_gemm_flags inLayoutFlag;
-    rocblas_query_int8_layout_flag(handle, &inLayoutFlag);
-    // bitwise-or your original flags with the queried result
-    flags |= inLayoutFlag;
-
     // Naming: dX is in GPU (device) memory. hX is in CPU (host) memory
-    std::vector<int8_t>  hA(sizeA), hAPacked(sizeA);
-    std::vector<int8_t>  hB(sizeB), hBPacked(sizeA);
+    std::vector<int8_t>  hA(sizeA);
+    std::vector<int8_t>  hB(sizeB);
     std::vector<int32_t> hC(sizeC);
     std::vector<int32_t> hD(sizeD);
     std::vector<int32_t> hDGold(sizeD);
@@ -121,45 +115,6 @@ int main(int argc, char** argv)
     helpers::fillVectorUniformIntRand(hB, 1, 3);
     helpers::fillVectorUniformIntRand(hC, 1, 3);
     helpers::fillVectorUniformIntRand(hD, 1, 3);
-
-    // if the queried preferable layout is packed-int8x4?
-    bool use_packed_int8x4 = flags & rocblas_gemm_flags_pack_int8x4;
-
-    if(transA == rocblas_operation_none && use_packed_int8x4 == true)
-    {
-        // pack i8_r hA matrix so 4 entries in k dimension are contiguous
-        int nb = 4;
-        for(int iM = 0; iM < M; iM++)
-        {
-            for(int iK = 0; iK < K; iK++)
-            {
-                hAPacked[iK % nb + (iM + (iK / nb) * lda) * nb] = hA[iM + iK * lda];
-            }
-        }
-    }
-    else
-    {
-        // no need to pack if the flag is not set, or transA != none
-        hAPacked = hA;
-    }
-
-    if(transB == rocblas_operation_transpose && use_packed_int8x4 == true)
-    {
-        // pack i8_r hB matrix so 4 entries in k dimension are contiguous
-        int nb = 4;
-        for(int iN = 0; iN < M; iN++)
-        {
-            for(int iK = 0; iK < K; iK++)
-            {
-                hBPacked[iK % nb + (iN + (iK / nb) * lda) * nb] = hB[iN + iK * lda];
-            }
-        }
-    }
-    else
-    {
-        // no need to pack if the flag is not set, or transB != transpose
-        hBPacked = hB;
-    }
 
     hDGold = hD;
 
@@ -177,10 +132,8 @@ int main(int argc, char** argv)
         }
 
         // copy data from CPU to device
-        CHECK_HIP_ERROR(
-            hipMemcpy(dA, hAPacked.data(), sizeof(int8_t) * sizeA, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(
-            hipMemcpy(dB, hBPacked.data(), sizeof(int8_t) * sizeB, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(int8_t) * sizeA, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(int8_t) * sizeB, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(
             dC, static_cast<void*>(hC.data()), sizeof(int32_t) * sizeC, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(
@@ -225,9 +178,8 @@ int main(int argc, char** argv)
 
     } // release device memory via helpers::DeviceVector destructors
 
-    std::cout << "M, N, K, lda, ldb, ldc, ldd, packing-flag = " << M << ", " << N << ", " << K
-              << ", " << lda << ", " << ldb << ", " << ldc << ", " << ldd << ", " << flags
-              << std::endl;
+    std::cout << "M, N, K, lda, ldb, ldc, ldd, flags = " << M << ", " << N << ", " << K << ", "
+              << lda << ", " << ldb << ", " << ldc << ", " << ldd << ", " << flags << std::endl;
 
     // calculate gold standard using CPU
     helpers::matMatMult<int32_t, int8_t>(hAlpha,
