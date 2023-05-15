@@ -2,17 +2,18 @@
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
-        ROCM_PATH=
+	ROCM_PATH=
 endif
 
 HIP_PATH?= $(wildcard /opt/rocm/hip)
 ifeq (,$(HIP_PATH))
-        HIP_PATH=
+	HIP_PATH=
 endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
 ifeq (,$(ROCBLAS_PATH))
-        ROCBLAS_PATH= $(wildcard /opt/rocm/include)
+	# default to rocblas in standard ROCM tree
+	ROCBLAS_PATH= $(ROCM_PATH)
 endif
 
 EXE = $(shell basename $(CURDIR))
