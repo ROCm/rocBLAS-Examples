@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
@@ -24,7 +24,7 @@ OPT = -ggdb -O0 -march=native -Wall
 INC = -isystem$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 CXXFLAGS = -std=c++14 $(INC) $(OPT)
 ifneq ($(CXX),$(HIPCXX))
-	CCFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__ 
+	CCFLAGS += -D__HIP_PLATFORM_AMD__ 
 endif
 
 LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
