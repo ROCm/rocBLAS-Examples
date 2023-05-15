@@ -2,6 +2,11 @@
 
 Full documentation for rocBLAS is available at [rocblas.readthedocs.io](https://rocblas.readthedocs.io/en/latest/).
 
+## For rocBLAS 3.0.0 in ROCm 5.6.0
+
+### Changed
+- Removed deprecated defines, code and referring to deprecated folders
+
 ## For rocBLAS 2.47.0 in ROCm 5.5.0
 
 ### Fixed
