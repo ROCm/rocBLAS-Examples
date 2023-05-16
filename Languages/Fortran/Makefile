@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,18 @@
 
 ROCM_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(ROCM_PATH))
-        ROCM_PATH=
+	ROCM_PATH=
 endif
 
 HIP_PATH?= $(wildcard /opt/rocm/hip)
 ifeq (,$(HIP_PATH))
-        HIP_PATH=
+	HIP_PATH=
 endif
 HIPCXX=$(HIP_PATH)/bin/hipcc
 
 ifeq (,$(ROCBLAS_PATH))
-        ROCBLAS_PATH= $(wildcard /opt/rocm/include)
+	# default to rocblas in standard ROCM tree
+	ROCBLAS_PATH= $(ROCM_PATH)
 endif
 
 EXE = $(shell basename $(CURDIR))
@@ -44,7 +45,7 @@ OPT = -ggdb -O0 -march=native -Wall -Wno-c-binding-type
 INC = -isystem$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include -I../../common
 FFLAGS = $(INC) $(OPT) 
 ifneq ($(CC),$(HIPCXX))
-	FFLAGS += -D__HIP_PLATFORM_AMD__ -D__HIP_PLATFORM_HCC__
+	FFLAGS += -D__HIP_PLATFORM_AMD__
 endif
 
 LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread
@@ -61,7 +62,7 @@ all: $(EXE)
 %.o: %.f90
 	$(CC) $(FFLAGS) -c $< -o $@
 
-rocblas.mod: $(ROCBLAS_PATH)/rocblas/rocblas_module.f90
+rocblas.mod: $(ROCBLAS_PATH)/include/rocblas_module.f90
 	$(CC) $(FFLAGS) -c $<
 
 $(EXE): rocblas.mod $(OBJECTS)
