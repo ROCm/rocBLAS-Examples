@@ -226,6 +226,30 @@ namespace helpers
     }
 
     template <typename T>
+    void make_unit_diagonal(rocblas_fill uplo, std::vector<T>&  A, rocblas_int N, size_t lda)
+    {
+        if(uplo == rocblas_fill_lower)
+        {
+            for(int i = 0; i < N; i++)
+            {
+                T diag = A[i + i * lda];
+                for(int j = 0; j <= i; j++)
+                    A[i + j * lda] = A[i + j * lda] / diag;
+            }
+        }
+        else // rocblas_fill_upper
+        {
+            for(int j = 0; j < N; j++)
+            {
+                T diag = A[j + j * lda];
+                for(int i = 0; i <= j; i++)
+                    A[i + j * lda] = A[i + j * lda] / diag;
+            }
+        }
+    }
+
+
+    template <typename T>
     void referenceTrmvCalc(rocblas_fill uplo, std::vector<T>&  A, rocblas_int N, size_t lda, std::vector<T>&  workspace, std::vector<T>& cpu_ref_result, rocblas_int incx)
     {
         // calculate expected result using CPU

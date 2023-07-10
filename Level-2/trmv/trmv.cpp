@@ -45,10 +45,12 @@ int main(int argc, char** argv)
 
     // Pre-filled parameters
     const rocblas_fill uplo = rocblas_fill_lower;
-    const rocblas_operation trans = rocblas_operation_none;
     const rocblas_diagonal diag = rocblas_diagonal_non_unit;
 
-    int sizeX, absIncx;
+    //trans is fixed to rocblas_operation_none in this example and other options would be supported in future release
+    const rocblas_operation trans = rocblas_operation_none;
+
+    size_t sizeX, absIncx;
 
     rocblas_int lda   = N;
     int      sizeA = lda * int(N);
@@ -72,6 +74,10 @@ int main(int argc, char** argv)
 
     //zero out lower/upper part of the matrix depending upon the uplo parameter
     helpers::makeMatrixUpperOrlower(uplo, hA, N, lda);
+
+    //Make matrix unit diagonal depending upon the diag parameter
+    if(diag == rocblas_diagonal_unit)
+        helpers::make_unit_diagonal(uplo, hA, N, lda);
 
     hXGold = hX;
     hXGold_work = hXGold; 
