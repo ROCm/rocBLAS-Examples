@@ -131,7 +131,7 @@ namespace helpers
         srand(int(time(NULL)));
         std::random_device                 rd{};
         std::mt19937                       gen{rd()};
-        std::uniform_int_distribution<int> distrib{100, 300};
+        std::uniform_int_distribution<int> distrib{-range, range};
         (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)

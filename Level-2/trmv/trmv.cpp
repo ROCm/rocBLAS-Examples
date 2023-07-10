@@ -22,7 +22,6 @@
 
 #include "helpers.hpp"
 #include <complex>
-#include <hip/hip_complex.h>
 #include <hip/hip_runtime.h>
 #include <math.h>
 #include <rocblas/rocblas.h>
@@ -86,8 +85,8 @@ int main(int argc, char** argv)
         // Naming: dX is in GPU (device) memory. hK is in CPU (host) memory
 
         // allocate memory on device
-        helpers::DeviceVector<T> dA(sizeA);
-        helpers::DeviceVector<T> dX(sizeX);
+        helpers::DeviceVector<rocblas_float_complex> dA(sizeA);
+        helpers::DeviceVector<rocblas_float_complex> dX(sizeX);
 
         if((!dA && sizeA) || (!dX && sizeX))
         {
@@ -118,7 +117,7 @@ int main(int argc, char** argv)
 
         // fetch device memory results, automatically blocked until results ready
         CHECK_HIP_ERROR(
-            hipMemcpy(hX.data(), dX, sizeof(T) * sizeX, hipMemcpyDeviceToHost));
+            hipMemcpy(hX.data(), dX, sizeof(rocblas_float_complex) * sizeX, hipMemcpyDeviceToHost));
 
         gpuTimer.stop();
 
