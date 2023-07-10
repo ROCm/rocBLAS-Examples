@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     const rocblas_fill uplo = rocblas_fill_lower;
     const rocblas_diagonal diag = rocblas_diagonal_non_unit;
 
-    //trans is fixed to rocblas_operation_none in this example and other options would be supported in future release
+    //trans is fixed to rocblas_operation_none in this example and support for other options would be added in the future release
     const rocblas_operation trans = rocblas_operation_none;
 
     size_t sizeX, absIncx;
