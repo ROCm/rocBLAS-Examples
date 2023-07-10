@@ -131,7 +131,7 @@ namespace helpers
         srand(int(time(NULL)));
         std::random_device                 rd{};
         std::mt19937                       gen{rd()};
-        std::uniform_int_distribution<int> distrib{-range, range};
+        std::uniform_int_distribution<int> distrib{100, 300};
         (void)distrib(gen); // prime generator to remove warning
 
         for(size_t i = 0; i < arr.size(); i += inc)
@@ -158,6 +158,80 @@ namespace helpers
         }
     }
 #endif
+
+    template <typename T>
+    void fillVectorUniformRealDist(std::vector<T>& arr, float lower_range = -1, float upper_range = 1)
+    {
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_real_distribution<float> distrib{lower_range, upper_range};
+        (void)distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i ++)
+        {
+            float rval = distrib(gen);
+            float ival = distrib(gen);
+            arr[i]   = T((float)rval, (float)ival);
+        }
+    }
+
+    template <typename T>
+    void makeMatrixUpperOrlower(rocblas_fill uplo, std::vector<T>&  A, rocblas_int N, size_t lda)
+    {
+        //zero out the lower part
+        if(uplo == rocblas_fill_lower)
+        {
+            for (int col = 1; col < N; col++)
+            {
+                for (int row = 0; row < col; row++)
+                {
+                    A[col*lda+row] = T(0.0); 
+                }
+            }
+        }
+        //zero out the upper part
+        else
+        {
+            for (int col = 0; col < N; col++)
+            {
+                for (int row = col + 1; row < N; row++)
+                {
+                    A[col*lda+row] = T(0.0); 
+                }
+            } 
+        }
+    }
+
+    template <typename T>
+    void referenceTrmvCalc(rocblas_fill uplo, std::vector<T>&  A, rocblas_int N, size_t lda, std::vector<T>&  workspace, std::vector<T>& cpu_ref_result, rocblas_int incx)
+    {
+        // calculate expected result using CPU
+        if(uplo == rocblas_fill_lower)
+        {
+            for (int row = 0; row < N; row++)
+            {
+                T elem = T(0.0);
+                for (int col = 0; col < row + 1; col++)
+                {
+                    elem += A[col*lda+row] * workspace[col * incx];
+                }
+                cpu_ref_result[row * incx] = elem;
+            }
+        }
+        else
+        {
+            for (int row = 0; row < N; row++)
+            {
+                T elem = T(0.0);
+                for (int col = row; col < N; col++)
+                {
+                    elem += A[col*lda+row] * workspace[col * incx];
+                }
+                cpu_ref_result[row * incx] = elem;
+            } 
+        }
+    }
 
     template <typename T>
     double maxError(std::vector<T>& A, std::vector<T>& reference)
@@ -189,6 +263,32 @@ namespace helpers
             maxRelativeError = relativeError < maxRelativeError ? maxRelativeError : relativeError;
         }
         return maxRelativeError;
+    }
+
+    template <typename T>
+    double maxRelativeErrorComplexVector(std::vector<T>& A, std::vector<T>& reference, rocblas_int N, size_t incx)
+    {
+        double real_maxRelativeError = double(std::numeric_limits<float>::min());
+        double imag_maxRelativeError = double(std::numeric_limits<float>::min());
+
+        for(int i = 0; i < N; i++)
+        {
+            if(std::real(reference[i * incx]) != std::real(A[i * incx]))
+            {
+                double gold          = double(std::real(reference[i * incx]));
+                double relativeError = gold != 0 ? (gold - double(std::real(A[i * incx]))) / (gold) : double(std::real(A[i * incx]));
+                relativeError        = relativeError > 0 ? relativeError : -relativeError;
+                real_maxRelativeError = relativeError < real_maxRelativeError ? real_maxRelativeError : relativeError;
+            }
+            if(std::imag(reference[i * incx]) != std::imag(A[i * incx]))
+            {
+                double gold          = double(std::imag(reference[i * incx]));
+                double relativeError = gold != 0 ? (gold - double(std::imag(A[i * incx]))) / (gold) : double(std::imag(A[i * incx]));
+                relativeError        = relativeError > 0 ? relativeError : -relativeError;
+                imag_maxRelativeError = relativeError < imag_maxRelativeError ? imag_maxRelativeError : relativeError;
+            }
+        }
+        return real_maxRelativeError >= imag_maxRelativeError ? real_maxRelativeError : imag_maxRelativeError;
     }
 
     template <typename T>
