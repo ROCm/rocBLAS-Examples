@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 
     double maxRelativeError = helpers::maxRelativeErrorComplexVector(hXGold, hX, N, incx);
 
-    std::cout << ": max. relative err. = " << maxRelativeError << std::endl;
+    std::cout << "max. relative err = " << maxRelativeError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
