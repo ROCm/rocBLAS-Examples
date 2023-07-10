@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     helpers::fillVectorUniformRealDist(hA, 100.0, 300.0);
     helpers::fillVectorUniformRealDist(hX, 100.0, 300.0);
 
-    //zero our lower/upper part depending upon the uplo parameter
+    //zero out lower/upper part of the matrix depending upon the uplo parameter
     helpers::makeMatrixUpperOrlower(uplo, hA, N, lda);
 
     hXGold = hX;
