@@ -86,14 +86,12 @@ int main(int argc, char** argv)
     //trans is fixed to rocblas_operation_none in this example and support for other options would be added in the future release
     const rocblas_operation trans = rocblas_operation_none;
 
-    size_t sizeX, absIncx;
+    size_t sizeX, absIncx, sizeA;
 
-    rocblas_int lda   = N;
-    int         sizeA = int64_t(lda) * N;
-
-    absIncx = incx >= 0 ? incx : -incx;
-
-    sizeX = N * absIncx;
+    rocblas_int lda = N;
+    sizeX           = N * absIncx;
+    absIncx         = incx >= 0 ? incx : -incx;
+    sizeA           = int64_t(lda) * N;
 
     // Naming: dA is in GPU (device) memory. hA is in CPU (host) memory
 
@@ -172,7 +170,8 @@ int main(int argc, char** argv)
 
     double maxAbsoulteError = helpers::maxAbsoulteErrorComplexVector(hXGold, hX, N, incx);
 
-    std::cout << "max relative err = " << maxRelativeError << ", max absolute err = "  << maxAbsoulteError << std::endl;
+    std::cout << "max relative err = " << maxRelativeError
+              << ", max absolute err = " << maxAbsoulteError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
