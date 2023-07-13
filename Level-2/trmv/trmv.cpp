@@ -29,6 +29,42 @@
 #include <stdlib.h>
 #include <vector>
 
+template <typename T>
+void referenceTrmvCalc(rocblas_fill    uplo,
+                       std::vector<T>& A,
+                       rocblas_int     N,
+                       size_t          lda,
+                       std::vector<T>& workspace,
+                       std::vector<T>& cpu_ref_result,
+                       rocblas_int     incx)
+{
+    // calculate expected result using CPU
+    if(uplo == rocblas_fill_lower)
+    {
+        for(int row = 0; row < N; row++)
+        {
+            T elem = T(0.0);
+            for(int col = 0; col < row + 1; col++)
+            {
+                elem += A[col * lda + row] * workspace[col * incx];
+            }
+            cpu_ref_result[row * incx] = elem;
+        }
+    }
+    else
+    {
+        for(int row = 0; row < N; row++)
+        {
+            T elem = T(0.0);
+            for(int col = row; col < N; col++)
+            {
+                elem += A[col * lda + row] * workspace[col * incx];
+            }
+            cpu_ref_result[row * incx] = elem;
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
 
@@ -44,7 +80,7 @@ int main(int argc, char** argv)
     rocblas_int incx = options.incx;
 
     // Pre-filled parameters
-    const rocblas_fill uplo = rocblas_fill_lower;
+    const rocblas_fill     uplo = rocblas_fill_lower;
     const rocblas_diagonal diag = rocblas_diagonal_non_unit;
 
     //trans is fixed to rocblas_operation_none in this example and support for other options would be added in the future release
@@ -53,7 +89,7 @@ int main(int argc, char** argv)
     size_t sizeX, absIncx;
 
     rocblas_int lda   = N;
-    int      sizeA = lda * int(N);
+    int         sizeA = int64_t(lda) * N;
 
     absIncx = incx >= 0 ? incx : -incx;
 
@@ -68,9 +104,9 @@ int main(int argc, char** argv)
     std::vector<T> hXGold(sizeX);
     std::vector<T> hXGold_work(sizeX);
 
-    // initialize uniform random data
-    helpers::fillVectorUniformRealDist(hA, 100.0, 300.0);
-    helpers::fillVectorUniformRealDist(hX, 100.0, 300.0);
+    // initialize uniform random data with lower and upper range
+    helpers::fillVectorUniformRealDist(hA, -0.5, 0.5);
+    helpers::fillVectorUniformRealDist(hX, -0.5, 0.5);
 
     //zero out lower/upper part of the matrix depending upon the uplo parameter
     helpers::makeMatrixUpperOrlower(uplo, hA, N, lda);
@@ -79,8 +115,8 @@ int main(int argc, char** argv)
     if(diag == rocblas_diagonal_unit)
         helpers::make_unit_diagonal(uplo, hA, N, lda);
 
-    hXGold = hX;
-    hXGold_work = hXGold; 
+    hXGold      = hX;
+    hXGold_work = hXGold;
 
     // using rocblas API
     rocblas_handle handle;
@@ -105,10 +141,8 @@ int main(int argc, char** argv)
         gpuTimer.start();
 
         // copy data from CPU to device (all 3 complex types same memory layout)
-        CHECK_HIP_ERROR(
-            hipMemcpy(dA, hA.data(), sizeof(T) * sizeA, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(
-            hipMemcpy(dX, hX.data(), sizeof(T) * sizeX, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * sizeA, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dX, hX.data(), sizeof(T) * sizeX, hipMemcpyHostToDevice));
 
         // enable passing alpha and beta parameters from pointer to host memory
         rstatus = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -132,11 +166,13 @@ int main(int argc, char** argv)
     std::cout << "N, lda, incx = " << N << ", " << lda << ", " << incx << std::endl;
 
     // calculate expected result using CPU
-    helpers::referenceTrmvCalc(uplo, hA, N, lda, hXGold_work, hXGold, incx);
+    referenceTrmvCalc(uplo, hA, N, lda, hXGold_work, hXGold, incx);
 
     double maxRelativeError = helpers::maxRelativeErrorComplexVector(hXGold, hX, N, incx);
 
-    std::cout << "max. relative err = " << maxRelativeError << std::endl;
+    double maxAbsoulteError = helpers::maxAbsoulteErrorComplexVector(hXGold, hX, N, incx);
+
+    std::cout << "max relative err = " << maxRelativeError << ", max absolute err = "  << maxAbsoulteError << std::endl;
 
     rstatus = rocblas_destroy_handle(handle);
     CHECK_ROCBLAS_STATUS(rstatus);
