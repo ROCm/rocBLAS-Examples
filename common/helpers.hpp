@@ -318,7 +318,7 @@ namespace helpers
                                                               : imag_maxRelativeError;
     }
 
-        template <typename T>
+    template <typename T>
     double maxAbsoulteErrorComplexVector(std::vector<T>& A,
                                          std::vector<T>& reference,
                                          rocblas_int     N,
@@ -331,13 +331,15 @@ namespace helpers
         {
             if(std::abs(std::real(reference[i * incx]) - std::real(A[i * incx])) > 1.0)
             {
-                double AbsoluteError = std::abs(std::real(reference[i * incx]) - std::real(A[i * incx]));
+                double AbsoluteError
+                    = std::abs(std::real(reference[i * incx]) - std::real(A[i * incx]));
                 real_maxAbsoluteError
                     = AbsoluteError < real_maxAbsoluteError ? real_maxAbsoluteError : AbsoluteError;
             }
             if(std::abs(std::imag(reference[i * incx]) - std::imag(A[i * incx])) > 1.0)
             {
-                double AbsoluteError = std::abs(std::imag(reference[i * incx]) - std::imag(A[i * incx]));
+                double AbsoluteError
+                    = std::abs(std::imag(reference[i * incx]) - std::imag(A[i * incx]));
                 imag_maxAbsoluteError
                     = AbsoluteError < imag_maxAbsoluteError ? imag_maxAbsoluteError : AbsoluteError;
             }
