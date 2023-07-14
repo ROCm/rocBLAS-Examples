@@ -89,9 +89,9 @@ int main(int argc, char** argv)
     size_t sizeX, absIncx, sizeA;
 
     rocblas_int lda = N;
-    sizeX           = N * absIncx;
     absIncx         = incx >= 0 ? incx : -incx;
-    sizeA           = int64_t(lda) * N;
+    sizeX           = N * absIncx;
+    sizeA           = size_t(lda) * N;
 
     // Naming: dA is in GPU (device) memory. hA is in CPU (host) memory
 
