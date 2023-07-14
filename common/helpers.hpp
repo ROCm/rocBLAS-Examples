@@ -205,7 +205,7 @@ namespace helpers
     template <typename T>
     void makeMatrixUpperOrlower(rocblas_fill uplo, std::vector<T>& A, rocblas_int N, size_t lda)
     {
-        //zero out the lower part
+        //zero out the upper part
         if(uplo == rocblas_fill_lower)
         {
             for(int col = 1; col < N; col++)
@@ -216,7 +216,7 @@ namespace helpers
                 }
             }
         }
-        //zero out the upper part
+        //zero out the lower part
         else
         {
             for(int col = 0; col < N; col++)
