@@ -141,24 +141,6 @@ namespace helpers
             arr[i]   = T((float)rval, (float)ival);
         }
     }
-#else
-    template <typename T>
-    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
-    {
-        srand(int(time(NULL)));
-        std::random_device                 rd{};
-        std::mt19937                       gen{rd()};
-        std::uniform_int_distribution<int> distrib{-range, range};
-        (void)distrib(gen); // prime generator to remove warning
-
-        for(size_t i = 0; i < arr.size(); i += inc)
-        {
-            int rval = distrib(gen);
-            arr[i]   = T((float)rval);
-        }
-    }
-#endif
-
     template <typename T,
               std::enable_if_t<!std::is_same<T, std::complex<float>>{}
                                    && !std::is_same<T, hipFloatComplex>{},
@@ -201,6 +183,40 @@ namespace helpers
             arr[i]     = T((float)rval, (float)ival);
         }
     }
+#else
+    template <typename T>
+    void fillVectorUniformIntRand(std::vector<T>& arr, rocblas_int inc = 1, int range = 3)
+    {
+        srand(int(time(NULL)));
+        std::random_device                 rd{};
+        std::mt19937                       gen{rd()};
+        std::uniform_int_distribution<int> distrib{-range, range};
+        (void)distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i += inc)
+        {
+            int rval = distrib(gen);
+            arr[i]   = T((float)rval);
+        }
+    }
+    template <typename T>
+    void fillVectorUniformRealDist(std::vector<T>& arr,
+                                   float           lower_range = -3.0,
+                                   float           upper_range = 3.0)
+    {
+        srand(int(time(NULL)));
+        std::random_device                    rd{};
+        std::mt19937                          gen{rd()};
+        std::uniform_real_distribution<float> distrib{lower_range, upper_range};
+        (void)distrib(gen); // prime generator to remove warning
+
+        for(size_t i = 0; i < arr.size(); i++)
+        {
+            float val = distrib(gen);
+            arr[i]    = T((float)val);
+        }
+    }
+#endif
 
     template <typename T>
     void makeMatrixUpperOrlower(rocblas_fill uplo, std::vector<T>& A, rocblas_int N, size_t lda)
