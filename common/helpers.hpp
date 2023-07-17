@@ -202,10 +202,7 @@ namespace helpers
         }
     }
 
-    template <typename T,
-              std::enable_if_t<!std::is_same<T, std::complex<float>>{}
-                                   && !std::is_same<T, hipFloatComplex>{},
-                               int> = 0>
+    template <typename T>
     void fillVectorUniformRealDist(std::vector<T>& arr,
                                    float           lower_range = -3.0,
                                    float           upper_range = 3.0)
