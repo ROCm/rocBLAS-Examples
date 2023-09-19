@@ -2,6 +2,11 @@
 
 Full documentation for rocBLAS is available at [rocblas.readthedocs.io](https://rocblas.readthedocs.io/en/latest/).
 
+## For rocBLAS 3.1.0 in ROCm 5.7.0
+
+### Changed
+- Added trmv example to illustrate how different data types for handling complex numbers can be used
+
 ## For rocBLAS 3.0.0 in ROCm 5.6.0
 
 ### Changed
