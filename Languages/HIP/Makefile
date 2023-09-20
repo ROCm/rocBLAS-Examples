@@ -5,7 +5,7 @@ ifeq (,$(ROCM_PATH))
 	ROCM_PATH=
 endif
 
-HIP_PATH?= $(wildcard /opt/rocm/hip)
+HIP_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(HIP_PATH))
 	HIP_PATH=
 endif
