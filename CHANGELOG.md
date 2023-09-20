@@ -6,6 +6,7 @@ Full documentation for rocBLAS is available at [rocblas.readthedocs.io](https://
 
 ### Changed
 - Added example calling complex version of trmv (ctrmv) which illustrates how different data types for handling complex numbers can be used and also absolute and relative error checking.
+- Removed the deprecated paths to hip/bin and rocblas fortran module being removed in future releases
 
 ## For rocBLAS 3.0.0 in ROCm 5.6.0
 
