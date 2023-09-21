@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     std::vector<T> hA(sizeA);
     std::vector<T> hX(sizeX);
     std::vector<T> hXCopy(sizeX);
-    std::vector<T> hXGold(sizeX);
+    std::vector<T> hXGold(sizeX, {0.0f, 0.0f});
 
     // initialize uniform random data with lower and upper range
     helpers::fillVectorUniformRealDist(hA, -0.5, 0.5);
