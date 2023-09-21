@@ -25,7 +25,7 @@ ifeq (,$(ROCM_PATH))
 	ROCM_PATH=
 endif
 
-HIP_PATH?= $(wildcard /opt/rocm/hip)
+HIP_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(HIP_PATH))
 	HIP_PATH=
 endif
@@ -62,7 +62,7 @@ all: $(EXE)
 %.o: %.f90
 	$(CC) $(FFLAGS) -c $< -o $@
 
-rocblas.mod: $(ROCBLAS_PATH)/include/rocblas_module.f90
+rocblas.mod: $(ROCBLAS_PATH)/include/rocblas/rocblas_module.f90
 	$(CC) $(FFLAGS) -c $<
 
 $(EXE): rocblas.mod $(OBJECTS)

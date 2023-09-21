@@ -25,7 +25,7 @@ ifeq (,$(ROCM_PATH))
 	ROCM_PATH=
 endif
 
-HIP_PATH?= $(wildcard /opt/rocm/hip)
+HIP_PATH?= $(wildcard /opt/rocm)
 ifeq (,$(HIP_PATH))
 	HIP_PATH=
 endif
@@ -53,7 +53,7 @@ ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_AMD__
 endif
 
-LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -lrocblas -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lm -lpthread -lstdc++
+LDFLAGS=-L$(ROCBLAS_PATH)/lib -L$(ROCM_PATH)/lib -Wl,-rpath=$(ROCBLAS_PATH)/lib -Wl,-rpath=$(ROCM_PATH)/lib -lrocblas -lm -lpthread -lstdc++
 ifneq ($(CXX),$(HIPCXX))
 	LDFLAGS += -lamdhip64
 endif
