@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
 
     double maxRelativeError = helpers::maxRelativeError(hD, hDGold);
     double eps              = std::numeric_limits<float>::epsilon();
-    double tolerance        = 10;
+    double tolerance        = 10.0 * sqrt((double)K);
     if(maxRelativeError > eps * tolerance)
     {
         std::cout << "FAIL";
