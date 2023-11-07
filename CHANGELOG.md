@@ -2,6 +2,11 @@
 
 Full documentation for rocBLAS is available at [rocblas.readthedocs.io](https://rocblas.readthedocs.io/en/latest/).
 
+## For rocBLAS 4.0.0 in ROCm 6.0.0
+
+### Changed
+- Fixed tolerance for half precisions to include problem size accumulation factor
+
 ## For rocBLAS 3.1.0 in ROCm 5.7.0
 
 ### Changed
