@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     int32_t hBeta  = (int32_t)options.beta; // Same datatype as compute_type
 
     const rocblas_operation transA = rocblas_operation_none;
-    const rocblas_operation transB = rocblas_operation_none;
+    const rocblas_operation transB = rocblas_operation_transpose;
 
     rocblas_int lda, ldb, ldc, ldd, sizeA, sizeB, sizeC, sizeD;
     int         strideA1, strideA2, strideB1, strideB2;

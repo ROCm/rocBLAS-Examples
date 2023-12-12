@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,8 +60,8 @@ int main(int argc, char** argv)
     float hAlpha = options.alpha; // Same datatype as compute_type
     float hBeta  = options.beta; // Same datatype as compute_type
 
-    const rocblas_operation transA = rocblas_operation_transpose;
-    const rocblas_operation transB = rocblas_operation_none;
+    const rocblas_operation transA = rocblas_operation_none;
+    const rocblas_operation transB = rocblas_operation_transpose;
 
     rocblas_int lda, ldb, ldc, ldd, sizeA, sizeB, sizeC, sizeD;
     int         strideA1, strideA2, strideB1, strideB2;
