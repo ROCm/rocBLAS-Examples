@@ -2,6 +2,11 @@
 
 Full documentation for rocBLAS is available at [rocblas.readthedocs.io](https://rocblas.readthedocs.io/en/latest/).
 
+## For rocBLAS 4.1.0 in ROCm 6.1.0
+
+### Changed
+- gemm_ex examples to use transpose arguments NT
+
 ## For rocBLAS 4.0.0 in ROCm 6.0.0
 
 ### Changed
