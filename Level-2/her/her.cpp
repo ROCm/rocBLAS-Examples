@@ -23,7 +23,7 @@
 #include "helpers.hpp"
 #include <complex>
 #include <hip/hip_complex.h>
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 #include <math.h>
 #include <rocblas/rocblas.h>
 #include <stdio.h>

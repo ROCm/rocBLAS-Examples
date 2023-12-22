@@ -1,3 +1,4 @@
+
 /* ************************************************************************
  * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
  *
@@ -22,9 +23,10 @@
 
 #pragma once
 #include "error_macros.h"
+#include <cassert>
 #include <cinttypes>
 #include <cstdio>
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 #include <locale.h>
 #include <random>
 #include <stdlib.h>

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 #include <map>
 #include <math.h>
 #include <rocblas/rocblas.h>
