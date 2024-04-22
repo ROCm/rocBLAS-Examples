@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * ************************************************************************ */
 
 #pragma once
+
 #include "ArgParser.hpp"
 #include "error_macros.h"
 #include "memoryHelpers.hpp"
@@ -46,7 +47,7 @@ namespace helpers
             n = v.size();
         for(size_t i = 0; i < n; i += inc)
         {
-            std::cout << v[i] << " ";
+            std::cout << (float)v[i] << " ";
         }
         std::cout << "\n";
     }
@@ -59,7 +60,7 @@ namespace helpers
         {
             for(int j = 0; j < n; j++)
             {
-                printf("%f ", A[i + j * lda]);
+                printf("%f ", (float)A[i + j * lda]);
             }
             printf("\n");
         }

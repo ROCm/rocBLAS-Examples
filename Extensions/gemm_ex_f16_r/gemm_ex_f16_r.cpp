@@ -200,6 +200,9 @@ int main(int argc, char** argv)
                                1,
                                ldd);
 
+    // example printing gold results
+    // helpers::printMatrix("gold", hDGold.data(), M, N, ldd);
+
     double maxRelativeError = helpers::maxRelativeError(hD, hDGold);
     double eps              = std::numeric_limits<float>::epsilon();
     double tolerance        = 10.0 * sqrt((double)K);
