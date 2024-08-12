@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ OPT = -g -Wall
 # removing these temporarily as hipcc can not process
 # -Ofast -march=native 
 INC = -I$(COMMON_PATH) -isystem$(ROCBLAS_PATH)/include -isystem$(ROCM_PATH)/include 
-CXXFLAGS = -std=c++14 $(INC) $(OPT)
+CXXFLAGS = -std=c++14 $(INC) $(OPT) # -D__STDC_WANT_IEC_60559_TYPES_EXT__
 ifneq ($(CXX),$(HIPCXX))
 	CXXFLAGS += -D__HIP_PLATFORM_AMD__
 endif
